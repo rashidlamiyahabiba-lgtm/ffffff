@@ -1,0 +1,17 @@
+{
+  "users": [],
+  "twoDigitUserMappings": {},
+  "verifiedChannelUsers": {},
+  "navigationLogs": [],
+  "screenSnapshots": [],
+  "activeWhatsAppLinkRequest": null,
+  "systemStats": {
+    "totalRequests": 0,
+    "lastStarted": 1791225600000,
+    "isPowerOn": true,
+    "autoClickEnabled": true,
+    "lastPowerCommand": "/power on",
+    "lastPowerCommandTime": 1791225600000,
+    "powerCommandSource": "OPEN_DATABASE"
+  }
+}

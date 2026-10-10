@@ -1,0 +1,24 @@
+{
+  "name": "accessibility-database-server",
+  "version": "1.0.0",
+  "description": "Node.js Database Server for Blind & Visually Impaired Accessibility Helper App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "nodejs",
+    "database",
+    "accessibility",
+    "android-backend",
+    "sqlite",
+    "express"
+  ],
+  "author": "Accessibility Helper Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

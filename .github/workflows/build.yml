@@ -1,0 +1,184 @@
+name: Android CI - Build APK (Voice Assist)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build Type (debug, release, or both)'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - both
+          - debug
+          - release
+      clean_build:
+        description: 'Run clean rebuild from scratch (পুনরায় নতুন করে বিল্ড)'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Voice Assist APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GRADLE_OPTS: "-Dorg.gradle.workers.max=2"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Disable noisy AWT problem matchers
+        run: |
+          echo "::remove-matcher owner=java::" || true
+          echo "::remove-matcher owner=gradle-Groovy::" || true
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle 9.3.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+          cache-read-only: false
+
+      - name: Ensure .env exists
+        run: |
+          if [ ! -f .env ]; then
+            cp -f .env.example .env || echo "GEMINI_API_KEY=MY_GEMINI_API_KEY" > .env
+          fi
+
+      - name: Ensure google-services.json exists
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            echo "Writing google-services.json from GitHub Secret..."
+            mkdir -p app
+            echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+          elif [ -f "app/google-services.json" ]; then
+            echo "app/google-services.json is present."
+          elif [ -f "google-services.json.base64" ]; then
+            echo "Restoring app/google-services.json from google-services.json.base64..."
+            mkdir -p app
+            base64 -d google-services.json.base64 > app/google-services.json
+          else
+            echo "Restoring app/google-services.json from embedded payload..."
+            mkdir -p app
+            echo "ewogICJwcm9qZWN0X2luZm8iOiB7CiAgICAicHJvamVjdF9udW1iZXIiOiAiMTU5ODE3NjM0NTUxIiwKICAgICJwcm9qZWN0X2lkIjogImdlbi1sYW5nLWNsaWVudC0wNTYxMjgwMTUzIiwKICAgICJzdG9yYWdlX2J1Y2tldCI6ICJnZW4tbGFuZy1jbGllbnQtMDU2MTI4MDE1My5maXJlYmFzZXN0b3JhZ2UuYXBwIgogIH0sCiAgImNsaWVudCI6IFsKICAgIHsKICAgICAgImNsaWVudF9pbmZvIjogewogICAgICAgICJtb2JpbGVzZGtfYXBwX2lkIjogIjE6MTU5ODE3NjM0NTUxOmFuZHJvaWQ6N2UyMjVhYmI4NDI2MWExODVhZjlmMiIsCiAgICAgICAgImFuZHJvaWRfY2xpZW50X2luZm8iOiB7CiAgICAgICAgICAicGFja2FnZV9uYW1lIjogImNvbS5haXN0dWRpby5hcHBsZXQuZ3Ryc21tIgogICAgICAgIH0KICAgICAgfSwKICAgICAgIm9hdXRoX2NsaWVudCI6IFsKICAgICAgICB7CiAgICAgICAgICAiY2xpZW50X2lkIjogIjE1OTgxNzYzNDU1MS1zMmVkcWx2aDlkcmZjOWc5NmxvY2ZrZ3B1aXZhYjZscC5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsCiAgICAgICAgICAiY2xpZW50X3R5cGUiOiAxLAogICAgICAgICAgImFuZHJvaWRfaW5mbyI6IHsKICAgICAgICAgICAgInBhY2thZ2VfbmFtZSI6ICJjb20uYWlzdHVkaW8uYXBwbGV0Lmd0cnNtbSIsCiAgICAgICAgICAgICJjZXJ0aWZpY2F0ZV9oYXNoIjogIjJkYjkwYjliM2UxM2RhMWVhMDI4ZmQ0MmJmMmVjYmI2NGM1ZjQxNmEiCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICB7CiAgICAgICAgICAiY2xpZW50X2lkIjogIjE1OTgxNzYzNDU1MS05NTBwZnF0NjQ3cjJvYWQ1amJjOHA2ZmN1amZvNWpyai5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsCiAgICAgICAgICAiY2xpZW50X3R5cGUiOiAzCiAgICAgICAgfQogICAgICBdLAogICAgICAiYXBpX2tleSI6IFsKICAgICAgICB7CiAgICAgICAgICAiY3VycmVudF9rZXkiOiAiQUl6YVN5Qmc1UDdVaVY1cU5JQXBaYzFGZXdLZnZ6WEwxbkFYQmpBIgogICAgICAgIH0KICAgICAgXSwKICAgICAgInNlcnZpY2VzIjogewogICAgICAgICJhcHBpbnZpdGVfc2VydmljZSI6IHsKICAgICAgICAgICJvdGhlcl9wbGF0Zm9ybV9vYXV0aF9jbGllbnQiOiBbCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAiY2xpZW50X2lkIjogIjE1OTgxNzYzNDU1MS05NTBwZnF0NjQ3cjJvYWQ1amJjOHA2ZmN1amZvNWpyai5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsCiAgICAgICAgICAgICAgImNsaWVudF90eXBlIjogMwogICAgICAgICAgICB9CiAgICAgICAgICBdCiAgICAgICAgfQogICAgICB9CiAgICB9CiAgXSwKICAiY29uZmlndXJhdGlvbl92ZXJzaW9uIjogIjEiCn0=" | base64 -d > app/google-services.json
+          fi
+          ls -lh app/google-services.json
+
+      - name: Restore or Generate Keystores
+        run: |
+          if [ -f "debug.keystore.base64" ]; then
+            echo "Decoding debug.keystore from debug.keystore.base64..."
+            base64 -d debug.keystore.base64 > debug.keystore
+          fi
+          if [ ! -f "debug.keystore" ]; then
+            echo "Generating fallback debug.keystore with keytool..."
+            keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          fi
+          if [ ! -f "my-upload-key.jks" ]; then
+            echo "Generating fallback release keystore (my-upload-key.jks) with alias 'upload'..."
+            keytool -genkey -v -keystore my-upload-key.jks -storepass android -alias upload -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Voice Assist Release,O=Android,C=US"
+          fi
+          cp -f my-upload-key.jks app/my-upload-key.jks
+          cp -f debug.keystore app/debug.keystore
+          ls -lh debug.keystore my-upload-key.jks app/my-upload-key.jks
+
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x ./gradlew || true
+
+      - name: Clean Previous Build Outputs (Fresh Rebuild)
+        if: "${{ github.event.inputs.clean_build == 'true' || github.event_name == 'workflow_dispatch' }}"
+        run: |
+          rm -rf app/build/outputs/apk/ || true
+
+      - name: Build Debug APK
+        if: "${{ github.event.inputs.build_type != 'release' }}"
+        run: |
+          ./gradlew assembleDebug -x test -x lint --stacktrace || gradle assembleDebug -x test -x lint --stacktrace
+          cp -f app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/VoiceAssist-debug.apk || true
+
+      - name: Build Release APK
+        if: "${{ github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'both' || startsWith(github.ref, 'refs/tags/v') }}"
+        env:
+          KEYSTORE_PATH: ${{ secrets.KEYSTORE_PATH || format('{0}/my-upload-key.jks', github.workspace) }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD || 'android' }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'android' }}
+        run: |
+          ./gradlew assembleRelease -x test -x lint --stacktrace || gradle assembleRelease -x test -x lint --stacktrace
+          cp -f app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/VoiceAssist-release.apk || true
+
+      - name: Verify Generated APKs
+        run: |
+          echo "Listing generated APKs:"
+          ls -lh app/build/outputs/apk/debug/ || true
+          ls -lh app/build/outputs/apk/release/ || true
+
+      - name: Upload VoiceAssist Debug APK
+        if: "${{ github.event.inputs.build_type != 'release' }}"
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceAssist-Debug-APK
+          path: app/build/outputs/apk/debug/VoiceAssist-debug.apk
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload VoiceAssist Release APK
+        if: "${{ github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'both' || startsWith(github.ref, 'refs/tags/v') }}"
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceAssist-Release-APK
+          path: app/build/outputs/apk/release/VoiceAssist-release.apk
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Publish Direct Download APK to GitHub Releases
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-apk
+          name: "Voice Assist APK (Direct Download)"
+          body: |
+            ### 📱 দৃষ্টি প্রতিবন্ধী ভাইদের জন্য সরাসরি ডাউনলোডযোগ্য APK (Direct APK Download)
+            নিচের **Assets** থেকে `VoiceAssist-debug.apk` অথবা `VoiceAssist-release.apk`-এ একবার ট্যাপ করলেই জিপ (ZIP) ছাড়া সরাসরি `.apk` ফাইলটি ডাউনলোড ও ইনস্টল হবে।
+          files: |
+            app/build/outputs/apk/debug/VoiceAssist-debug.apk
+            app/build/outputs/apk/release/VoiceAssist-release.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Build Summary for Visually Impaired Users
+        run: |
+          echo "## ✅ Voice Assist APK Build Complete (পুনরায় নতুন এপিকে বিল্ড সম্পন্ন)" >> $GITHUB_STEP_SUMMARY
+          echo "- **App Name:** Voice Assist" >> $GITHUB_STEP_SUMMARY
+          echo "- **Package ID:** \`com.aistudio.applet.gtrsmm\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Direct APK Release:** [Click here to go to Releases & Download APK directly](https://github.com/${{ github.repository }}/releases/tag/latest-apk)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Artifacts Ready:** \`VoiceAssist-Debug-APK\` & \`VoiceAssist-Release-APK\`" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,162 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Default-Deny Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidDeviceProfile(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.deviceId is string && data.deviceId.size() >= 1 && data.deviceId.size() <= 64 &&
+             data.deviceModel is string && data.deviceModel.size() <= 120 &&
+             data.isPowerOn is bool &&
+             data.isServiceEnabled is bool &&
+             data.lastSignalSummary is string && data.lastSignalSummary.size() <= 500 &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp &&
+             (!('lastConnectedAt' in data) || data.lastConnectedAt is timestamp);
+    }
+
+    function isValidAccessibilitySignal(data) {
+      return data.id is string && data.id.size() >= 1 && data.id.size() <= 128 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+             data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.deviceId is string && data.deviceId.size() >= 1 && data.deviceId.size() <= 64 &&
+             data.signalType is string && data.signalType.size() <= 40 &&
+             data.signalType in ['EMERGENCY_SOS', 'VOICE_ASSIST', 'POWER_ON', 'POWER_OFF', 'SCREEN_SHIELD', 'WHATSAPP_LINK', 'PAYMENT_ASSIST', 'STATUS_PING', 'CLICK_BACK'] &&
+             data.command is string && data.command.size() >= 1 && data.command.size() <= 200 &&
+             data.messageBn is string && data.messageBn.size() >= 1 && data.messageBn.size() <= 500 &&
+             data.priority is string && data.priority.size() <= 20 &&
+             data.priority in ['CRITICAL', 'HIGH', 'NORMAL'] &&
+             data.status is string && data.status.size() <= 20 &&
+             data.status in ['SENT', 'RUNNING', 'DELIVERED', 'EXECUTED'] &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidPhoneKey(phoneKey) {
+      return phoneKey is string && phoneKey.size() >= 8 && phoneKey.size() <= 20 && phoneKey.matches('^[0-9]+$');
+    }
+
+    match /phone_users/{phoneKey} {
+      allow get: if isValidPhoneKey(phoneKey);
+      allow list: if isValidPhoneKey(phoneKey) && resource.data.userId == phoneKey;
+
+      allow create: if isValidPhoneKey(phoneKey) &&
+                       incoming().userId == phoneKey &&
+                       incoming().keys().hasAll(['userId', 'deviceId', 'deviceModel', 'isPowerOn', 'isServiceEnabled', 'lastSignalSummary', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'deviceId', 'deviceModel', 'isPowerOn', 'isServiceEnabled', 'lastSignalSummary', 'createdAt', 'updatedAt', 'lastConnectedAt']) &&
+                       isValidDeviceProfile(incoming());
+
+      allow update: if isValidPhoneKey(phoneKey) &&
+                       isValidDeviceProfile(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['deviceId', 'deviceModel', 'isPowerOn', 'isServiceEnabled', 'lastSignalSummary', 'updatedAt', 'lastConnectedAt']);
+
+      match /signals/{signalId} {
+        allow get: if isValidPhoneKey(phoneKey) &&
+                      isValidId(signalId) &&
+                      resource.data.userId == phoneKey;
+
+        allow list: if isValidPhoneKey(phoneKey) &&
+                       resource.data.userId == phoneKey;
+
+        allow create: if isValidPhoneKey(phoneKey) &&
+                         isValidId(signalId) &&
+                         incoming().userId == phoneKey &&
+                         incoming().id == signalId &&
+                         incoming().keys().hasAll(['id', 'userId', 'deviceId', 'signalType', 'command', 'messageBn', 'priority', 'status', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['id', 'userId', 'deviceId', 'signalType', 'command', 'messageBn', 'priority', 'status', 'createdAt', 'updatedAt']) &&
+                         isValidAccessibilitySignal(incoming());
+
+        allow update: if isValidPhoneKey(phoneKey) &&
+                         isValidId(signalId) &&
+                         isValidAccessibilitySignal(incoming()) &&
+                         incoming().id == existing().id &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         (existing().status != 'EXECUTED' || incoming().status == 'EXECUTED') &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['status', 'messageBn', 'updatedAt']);
+      }
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId && resource.data.userId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['userId', 'deviceId', 'deviceModel', 'isPowerOn', 'isServiceEnabled', 'lastSignalSummary', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'deviceId', 'deviceModel', 'isPowerOn', 'isServiceEnabled', 'lastSignalSummary', 'createdAt', 'updatedAt', 'lastConnectedAt']) &&
+                       isValidDeviceProfile(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       isValidDeviceProfile(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['deviceId', 'deviceModel', 'isPowerOn', 'isServiceEnabled', 'lastSignalSummary', 'updatedAt', 'lastConnectedAt']);
+
+      allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+
+      match /signals/{signalId} {
+        allow get: if isSignedIn() &&
+                      isValidId(userId) &&
+                      isValidId(signalId) &&
+                      request.auth.uid == userId &&
+                      resource.data.userId == request.auth.uid;
+
+        allow list: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       resource.data.userId == request.auth.uid;
+
+        allow create: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(signalId) &&
+                         request.auth.uid == userId &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().id == signalId &&
+                         incoming().keys().hasAll(['id', 'userId', 'deviceId', 'signalType', 'command', 'messageBn', 'priority', 'status', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['id', 'userId', 'deviceId', 'signalType', 'command', 'messageBn', 'priority', 'status', 'createdAt', 'updatedAt']) &&
+                         isValidAccessibilitySignal(incoming());
+
+        allow update: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(signalId) &&
+                         request.auth.uid == userId &&
+                         isValidAccessibilitySignal(incoming()) &&
+                         incoming().id == existing().id &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         (existing().status != 'EXECUTED' || incoming().status == 'EXECUTED') &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['status', 'messageBn', 'updatedAt']);
+
+        allow delete: if isSignedIn() &&
+                         isValidId(userId) &&
+                         isValidId(signalId) &&
+                         request.auth.uid == userId &&
+                         resource.data.userId == request.auth.uid;
+      }
+    }
+  }
+}

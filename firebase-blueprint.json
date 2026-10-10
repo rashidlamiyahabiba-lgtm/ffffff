@@ -1,0 +1,168 @@
+{
+  "entities": {
+    "DeviceProfile": {
+      "title": "DeviceProfile",
+      "description": "Represents a visually impaired user's registered Android device profile and live accessibility state in Firebase Firestore.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase User UID."
+        },
+        "deviceId": {
+          "type": "string",
+          "description": "Unique hardware device identifier (e.g. DEV-XXXXXXXX)."
+        },
+        "deviceModel": {
+          "type": "string",
+          "description": "Android manufacturer and model name."
+        },
+        "isPowerOn": {
+          "type": "boolean",
+          "description": "Whether emergency screen protection and auto-assist power is active."
+        },
+        "isServiceEnabled": {
+          "type": "boolean",
+          "description": "Whether the Android Accessibility Service is active."
+        },
+        "lastSignalSummary": {
+          "type": "string",
+          "description": "Bengali summary of the latest accessibility or emergency signal."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the profile was created (clients must submit FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the profile was last updated (clients must submit FieldValue.serverTimestamp())."
+        },
+        "lastConnectedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp recording when the target phone app/accessibility service was last connected and actively listening."
+        }
+      },
+      "required": [
+        "userId",
+        "deviceId",
+        "deviceModel",
+        "isPowerOn",
+        "isServiceEnabled",
+        "lastSignalSummary",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AccessibilitySignal": {
+      "title": "AccessibilitySignal",
+      "description": "Represents a real-time accessibility or emergency signal sent or received by a visually impaired user via Firebase Firestore.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique document ID for the signal."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase User UID who owns this signal."
+        },
+        "deviceId": {
+          "type": "string",
+          "description": "Device identifier originating or receiving the signal."
+        },
+        "signalType": {
+          "type": "string",
+          "enum": [
+            "EMERGENCY_SOS",
+            "VOICE_ASSIST",
+            "POWER_ON",
+            "POWER_OFF",
+            "SCREEN_SHIELD",
+            "WHATSAPP_LINK",
+            "PAYMENT_ASSIST",
+            "STATUS_PING",
+            "CLICK_BACK"
+          ],
+          "description": "Category of the accessibility or emergency signal."
+        },
+        "command": {
+          "type": "string",
+          "description": "Executable command payload or action code."
+        },
+        "messageBn": {
+          "type": "string",
+          "description": "Accessible Bengali voice/display description of the signal."
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "CRITICAL",
+            "HIGH",
+            "NORMAL"
+          ],
+          "description": "Delivery priority for emergency vs standard signals."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "SENT",
+            "DELIVERED",
+            "EXECUTED"
+          ],
+          "description": "Current execution lifecycle status of the signal."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the signal was created (clients must submit FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the signal was last updated (clients must submit FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "deviceId",
+        "signalType",
+        "command",
+        "messageBn",
+        "priority",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/DeviceProfile"
+      },
+      "description": "Stores each authenticated visually impaired user's device profile and live power/service status."
+    },
+    "/users/{userId}/signals/{signalId}": {
+      "schema": {
+        "$ref": "#/entities/AccessibilitySignal"
+      },
+      "description": "Stores real-time emergency and accessibility signals for the user's device."
+    },
+    "/phone_users/{phoneKey}": {
+      "schema": {
+        "$ref": "#/entities/DeviceProfile"
+      },
+      "description": "Stores phone-number-identified visually impaired user's device profile and live power/service status."
+    },
+    "/phone_users/{phoneKey}/signals/{signalId}": {
+      "schema": {
+        "$ref": "#/entities/AccessibilitySignal"
+      },
+      "description": "Stores real-time emergency and accessibility signals keyed by the user's normalized phone number."
+    }
+  }
+}

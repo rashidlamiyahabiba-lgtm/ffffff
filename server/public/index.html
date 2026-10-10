@@ -1,0 +1,2209 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="description" content="Filora Accessibility Remote & Database Panel - দৃষ্টি প্রতিবন্ধী ভাইদের জন্য বিশেষ স্বয়ংক্রিয় কন্ট্রোল সিস্টেম">
+  <meta name="theme-color" content="#060B11">
+  <title>FILORA - Accessibility Control Panel</title>
+
+  <!-- Google Fonts for crisp modern typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700;800&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #060B11;
+      --bg-card: #0A121E;
+      --bg-card-border: #182334;
+      --bg-card-hover: #0E1A2C;
+      --card-inner: #070D17;
+      --cyan-neon: #38BDF8;
+      --cyan-bright: #00D2FF;
+      --cyan-glow: rgba(56, 189, 248, 0.25);
+      --electric-blue: #00A3FF;
+      --pill-inactive-bg: #111A29;
+      --pill-inactive-text: #64748B;
+      --pill-active-bg: rgba(56, 189, 248, 0.15);
+      --pill-active-text: #38BDF8;
+      --pill-active-border: #38BDF8;
+      --pill-active-green: #22C55E;
+      --danger: #F43F5E;
+      --danger-border: rgba(244, 63, 94, 0.4);
+      --danger-bg: rgba(244, 63, 94, 0.08);
+      --text-main: #F8FAFC;
+      --text-muted: #8493A8;
+      --focus-ring: #FACC15;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.16) 0%, transparent 65%),
+        radial-gradient(circle at 80% 90%, rgba(30, 58, 138, 0.12) 0%, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 16px 40px 16px;
+      line-height: 1.5;
+    }
+
+    /* Skip link for screen readers */
+    .skip-to-main {
+      position: absolute;
+      top: -100px;
+      left: 16px;
+      background: var(--focus-ring);
+      color: #000;
+      font-weight: 800;
+      padding: 14px 20px;
+      border-radius: 8px;
+      z-index: 9999;
+      text-decoration: none;
+      transition: top 0.2s;
+    }
+    .skip-to-main:focus {
+      top: 16px;
+    }
+
+    /* Accessibility Focus */
+    a:focus-visible, button:focus-visible, input:focus-visible {
+      outline: 3px solid var(--focus-ring) !important;
+      outline-offset: 3px !important;
+    }
+
+    /* Main Container strictly matching screenshot proportions */
+    .app-container {
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* Top Bar */
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 4px;
+      margin-top: 6px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo-btn {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(145deg, #0A2234, #061522);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 18px rgba(0, 163, 255, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .brand-logo-btn:hover {
+      transform: scale(1.04);
+      box-shadow: 0 6px 24px rgba(0, 163, 255, 0.35);
+    }
+    .brand-logo-btn:active {
+      transform: scale(0.96);
+    }
+
+    .brand-logo-btn svg {
+      width: 26px;
+      height: 26px;
+      fill: #38BDF8;
+      filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.8));
+    }
+
+    .brand-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      color: #38BDF8;
+      text-transform: uppercase;
+      user-select: none;
+      text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Accessibility Voice Toggle */
+    .icon-pill-btn {
+      background: #0E1724;
+      border: 1px solid #1E293B;
+      color: var(--text-muted);
+      height: 44px;
+      padding: 0 12px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .icon-pill-btn.active {
+      border-color: var(--cyan-neon);
+      color: var(--cyan-neon);
+      background: rgba(56, 189, 248, 0.12);
+    }
+    .icon-pill-btn:hover {
+      border-color: #38BDF8;
+    }
+
+    /* Logout Button matching screenshot */
+    .btn-logout {
+      background: #120D14;
+      border: 1.5px solid var(--danger-border);
+      color: #F87171;
+      height: 44px;
+      padding: 0 16px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+    .btn-logout svg {
+      width: 17px;
+      height: 17px;
+      stroke: #F87171;
+      stroke-width: 2.2;
+    }
+    .btn-logout:hover {
+      background: rgba(244, 63, 94, 0.18);
+      border-color: #F43F5E;
+      color: #FFFFFF;
+      box-shadow: 0 0 16px rgba(244, 63, 94, 0.3);
+    }
+    .btn-logout:active {
+      transform: scale(0.97);
+    }
+
+    /* PAIR CODE CARD matching screenshot */
+    .pair-code-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 26px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title-row svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: #38BDF8;
+      stroke-width: 2.2;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #FFFFFF;
+      text-transform: uppercase;
+    }
+
+    .card-subtitle {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-left: 2px;
+    }
+
+    /* Code Input Field */
+    .code-input-container {
+      background: var(--card-inner);
+      border: 1px solid #1C283B;
+      border-radius: 16px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .code-input-container:focus-within {
+      border-color: #38BDF8;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
+    }
+
+    .keyboard-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: #38BDF8;
+      opacity: 0.9;
+    }
+
+    .code-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #FFFFFF;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      outline: none;
+    }
+    .code-input::placeholder {
+      color: #475569;
+      letter-spacing: 0.12em;
+    }
+
+    .btn-quick-refresh {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s, transform 0.2s;
+    }
+    .btn-quick-refresh:hover {
+      color: #38BDF8;
+      transform: rotate(45deg);
+    }
+
+    /* FLY Button */
+    .btn-fly {
+      width: 100%;
+      height: 56px;
+      background: linear-gradient(90deg, #00A3FF 0%, #00D2FF 100%);
+      border: none;
+      border-radius: 999px;
+      color: #041021;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 163, 255, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+    .btn-fly svg {
+      width: 20px;
+      height: 20px;
+      fill: #041021;
+      transform: rotate(-15deg);
+      transition: transform 0.2s;
+    }
+    .btn-fly:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 10px 30px rgba(0, 163, 255, 0.55);
+      transform: translateY(-2px);
+    }
+    .btn-fly:hover svg {
+      transform: rotate(0deg) translate(2px, -2px);
+    }
+    .btn-fly:active {
+      transform: scale(0.98);
+    }
+
+    /* CONTROLS Divider Header */
+    .controls-header-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+      margin-bottom: -4px;
+      padding: 0 4px;
+    }
+
+    .controls-label-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .controls-label-group svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: #8E9BAE;
+      stroke-width: 2.2;
+    }
+
+    .controls-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      color: #8E9BAE;
+      text-transform: uppercase;
+    }
+
+    .controls-divider-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, #1E293B 0%, rgba(30, 41, 59, 0.2) 100%);
+    }
+
+    /* 2x2 Grid of Control Cards */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .control-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 26px;
+      padding: 26px 16px;
+      min-height: 172px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .control-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-2px);
+    }
+    .control-card:active {
+      transform: scale(0.97);
+    }
+
+    /* Circular Icon Badge inside cards */
+    .icon-circle {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: #111A29;
+      border: 1px solid #1E2B3E;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .icon-circle svg {
+      width: 26px;
+      height: 26px;
+      stroke: #8E9BAE;
+      stroke-width: 2.2;
+      fill: none;
+      transition: all 0.3s ease;
+    }
+
+    /* Control Titles */
+    .control-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: #FFFFFF;
+      text-transform: uppercase;
+    }
+
+    /* Status Pill (OFF / ON) */
+    .status-pill {
+      background: var(--pill-inactive-bg);
+      color: var(--pill-inactive-text);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      padding: 5px 16px;
+      border-radius: 999px;
+      border: 1px solid #1E293B;
+      text-transform: uppercase;
+      transition: all 0.25s ease;
+    }
+
+    /* Active / ON States */
+    .control-card.is-active {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: linear-gradient(180deg, #0B1626 0%, #07101C 100%);
+      box-shadow: 0 12px 30px rgba(0, 163, 255, 0.2);
+    }
+
+    .control-card.is-active .icon-circle {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: #38BDF8;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+    }
+
+    .control-card.is-active .icon-circle svg {
+      stroke: #38BDF8;
+      filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8));
+    }
+
+    .control-card.is-active .status-pill {
+      background: rgba(56, 189, 248, 0.18);
+      color: #38BDF8;
+      border-color: #38BDF8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    }
+
+    /* Power specific active state (green/cyan neon) */
+    .control-card.power-card.is-active .icon-circle {
+      background: rgba(34, 197, 94, 0.16);
+      border-color: #22C55E;
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+    }
+    .control-card.power-card.is-active .icon-circle svg {
+      stroke: #22C55E;
+      filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.8));
+    }
+    .control-card.power-card.is-active .status-pill {
+      background: rgba(34, 197, 94, 0.18);
+      color: #22C55E;
+      border-color: #22C55E;
+    }
+
+    /* Overlay Card Specific Active (Emerald Green Curtain Shield) */
+    .control-card#cardOverlay.is-active {
+      border-color: #10B981;
+      background: rgba(6, 78, 59, 0.35);
+      box-shadow: 0 10px 28px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(16, 185, 129, 0.3);
+    }
+    .control-card#cardOverlay.is-active .icon-circle {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #10B981;
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.5);
+    }
+    .control-card#cardOverlay.is-active .icon-circle svg {
+      stroke: #10B981;
+    }
+    .control-card#cardOverlay.is-active .status-pill {
+      background: rgba(16, 185, 129, 0.25);
+      color: #34D399;
+      border-color: #10B981;
+    }
+
+    /* Back Button Card Active Flash */
+    .control-card#cardBack.is-active {
+      border-color: #F59E0B;
+      background: rgba(245, 158, 11, 0.2);
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+    }
+    .control-card#cardBack.is-active .icon-circle {
+      background: rgba(245, 158, 11, 0.25);
+      border-color: #F59E0B;
+    }
+    .control-card#cardBack.is-active .icon-circle svg {
+      stroke: #F59E0B;
+    }
+
+    /* TalkBack Dedicated Bar Card */
+    .talkback-bar-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--bg-card-border);
+      border-radius: 20px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.25s ease;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    }
+    .talkback-bar-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-1px);
+    }
+    .talkback-bar-card:active {
+      transform: scale(0.99);
+    }
+    .talkback-bar-card.is-active {
+      border-color: rgba(34, 197, 94, 0.4);
+      background: rgba(34, 197, 94, 0.08);
+    }
+    .talkback-bar-card.is-muted {
+      border-color: rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.08);
+    }
+    .talkback-icon-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #111A29;
+      border: 1px solid #1E2B3E;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #34D399;
+      transition: all 0.3s ease;
+    }
+    .talkback-bar-card.is-muted .talkback-icon-circle {
+      color: #EF4444;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    .talkback-icon-circle svg {
+      width: 24px;
+      height: 24px;
+    }
+    .talkback-text-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .talkback-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .talkback-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #FFFFFF;
+    }
+    .talkback-subtitle {
+      font-size: 0.78rem;
+      color: #94A3B8;
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    /* Screen Reader Announcements Banner */
+    .sr-status-banner {
+      width: 100%;
+      background: rgba(14, 165, 233, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: #94A3B8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sr-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22C55E;
+      box-shadow: 0 0 8px #22C55E;
+    }
+
+    /* Expandable Database & Telemetry Drawer */
+    .details-drawer-toggle {
+      width: 100%;
+      background: #0B1320;
+      border: 1px solid #1E293B;
+      color: #94A3B8;
+      border-radius: 16px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .details-drawer-toggle:hover {
+      border-color: #38BDF8;
+      color: #FFFFFF;
+    }
+
+    .database-drawer-content {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      background: #080F1A;
+      border: 1px solid #1A2639;
+      border-radius: 20px;
+      padding: 18px;
+      margin-top: -10px;
+      font-size: 0.85rem;
+    }
+    .database-drawer-content.open {
+      display: flex;
+    }
+
+    .stat-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .stat-mini-card {
+      background: #0C1524;
+      border: 1px solid #1E2C42;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .stat-mini-title {
+      font-size: 0.72rem;
+      color: #7E8E9F;
+      font-weight: 600;
+    }
+    .stat-mini-val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #38BDF8;
+      margin-top: 2px;
+    }
+
+    .logs-mini-box {
+      background: #050A12;
+      border: 1px solid #152234;
+      border-radius: 12px;
+      padding: 12px;
+      max-height: 180px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #CBD5E1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Accessibility Vibration Settings inside Database Drawer */
+    .vibration-settings-card {
+      background: #0C1524;
+      border: 1px solid #1E2C42;
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .vibration-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .vibration-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #38BDF8;
+      letter-spacing: 0.04em;
+    }
+    .vibration-subtitle {
+      font-size: 0.74rem;
+      color: #94A3B8;
+      margin-top: 2px;
+    }
+    .vibration-event-row {
+      background: #070E19;
+      border: 1px solid #162235;
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .vibration-event-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .vibration-event-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #F8FAFC;
+    }
+    .vibration-select {
+      width: 100%;
+      background: #0E1726;
+      border: 1px solid #24354F;
+      color: #E2E8F0;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      outline: none;
+    }
+    .vibration-test-btn {
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #38BDF8;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .vibration-test-btn:hover {
+      background: rgba(56, 189, 248, 0.25);
+      color: #FFFFFF;
+    }
+    .intensity-pills {
+      display: flex;
+      gap: 6px;
+    }
+    .intensity-pill {
+      flex: 1;
+      height: 36px;
+      border-radius: 10px;
+      background: #080E18;
+      border: 1px solid #1E293B;
+      color: #94A3B8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .intensity-pill.active {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: #38BDF8;
+      color: #38BDF8;
+    }
+
+    /* Modal for Logout */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      padding: 20px;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal-box {
+      background: #0D1625;
+      border: 1px solid #23344C;
+      border-radius: 24px;
+      padding: 24px;
+      max-width: 360px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+    .modal-msg {
+      font-size: 0.9rem;
+      color: #94A3B8;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .btn-modal-cancel {
+      flex: 1;
+      height: 46px;
+      border-radius: 12px;
+      background: #1E293B;
+      border: none;
+      color: #FFFFFF;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-modal-logout {
+      flex: 1;
+      height: 46px;
+      border-radius: 12px;
+      background: #F43F5E;
+      border: none;
+      color: #FFFFFF;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* Toast notification */
+    .toast-popup {
+      position: fixed;
+      bottom: 24px;
+      background: #0E1F35;
+      border: 1px solid #38BDF8;
+      color: #FFFFFF;
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      z-index: 10000;
+      pointer-events: none;
+    }
+    .toast-popup.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen Reader Skip Link -->
+  <a href="#mainControls" class="skip-to-main">সরাসরি মূল কন্ট্রোল প্যানেলে যান (Skip to Controls)</a>
+
+  <div class="app-container" role="main" id="mainControls">
+
+    <!-- TOP HEADER -->
+    <header role="banner" aria-label="অ্যাপ হেডার">
+      <div class="brand-group">
+        <!-- Logo Squircle with Cyan Bolt -->
+        <button class="brand-logo-btn" id="logoBtn" aria-label="ফিলোর লোগো - অডিও টেস্ট ও রিফ্রেশ" title="Filora System Refresh">
+          <svg viewBox="0 0 24 24">
+            <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z"/>
+          </svg>
+        </button>
+        <span class="brand-title" aria-label="ফিলোর অ্যাপ">FILORA</span>
+      </div>
+
+      <div class="header-actions">
+        <!-- Speech Voice Guidance Toggle -->
+        <button class="icon-pill-btn active" id="btnVoiceToggle" aria-label="ভয়েস ঘোষণা চালু অথবা বন্ধ করুন" title="Toggle Bengali Voice Guidance">
+          <span id="voiceIcon">🔊</span>
+          <span id="voiceText">ভয়েস</span>
+        </button>
+
+        <!-- LOGOUT button matching screenshot -->
+        <button class="btn-logout" id="btnLogout" aria-label="লগআউট বাটন" title="Logout from panel">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 17L21 12L16 7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 12H9" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          LOGOUT
+        </button>
+      </div>
+    </header>
+
+    <!-- Dedicated Vision & Mission Helper Banner -->
+    <div style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(34, 197, 94, 0.12)); border: 1.5px solid rgba(56, 189, 248, 0.4); border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 1.3rem;">👁️✨</span>
+        <span style="font-size: 0.92rem; font-weight: 800; color: #38BDF8; letter-spacing: 0.05em;">
+          দৃষ্টি প্রতিবন্ধী ভাইয়ের চোখের আলো
+        </span>
+      </div>
+      <p style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.45;">
+        ইনশাআল্লাহ দৃষ্টি প্রতিবন্ধী ভাইয়ের চোখের আলো হয়ে <strong>Accessibility Helper</strong> সব সময় সর্বোচ্চ টা দিয়ে পাশে থাকবে। WhatsApp Linked auto-click শুরু হওয়ার পর ভুল করে স্ক্রিনে ক্লিক/টাচ করলেও এই প্রক্রিয়া নষ্ট বা বন্ধ হবে না। ডাটাবেইজ পেইজের <strong>পাওয়ার বাটুন অফ না করা পর্যন্ত</strong> auto copy, auto click, auto clipboard open ও auto paste কার্যক্রম বিরতিহীনভাবে চলমান থাকবে।
+      </p>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
+        <span style="background: rgba(56, 189, 248, 0.2); border: 1px solid rgba(56, 189, 248, 0.4); color: #7DD3FC; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">১. পেয়ারিং নাম্বার</span>
+        <span style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.4); color: #86EFAC; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">২. Power বাটন অন (বিরতিহীন চলবে)</span>
+        <span style="background: rgba(16, 185, 129, 0.25); border: 1px solid rgba(16, 185, 129, 0.5); color: #A7F3D0; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">🛡️ স্ক্রিন টাচ প্রটেকশন চালু</span>
+        <span style="background: rgba(0, 163, 255, 0.25); border: 1px solid rgba(0, 210, 255, 0.5); color: #E0F2FE; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 6px;">৩. FLY -> সম্পূর্ণ প্রসেসিং রান</span>
+      </div>
+    </div>
+
+    <!-- WHATSAPP LINKED PAIRING CARD -->
+    <section class="pair-code-card" aria-label="হোয়াটসঅ্যাপ লিঙ্কড পেয়ারিং প্যানেল">
+      <div class="card-header">
+        <div class="card-title-row">
+          <!-- WhatsApp Link SVG -->
+          <svg viewBox="0 0 24 24">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h2 class="card-title">WHATSAPP LINKED PAIRING</h2>
+        </div>
+        <p class="card-subtitle">দৃষ্টি প্রতিবন্ধী ভাইদের জন্য শুধুমাত্র WhatsApp Linked ফিচার ব্যবহারের বিশেষ স্বয়ংক্রিয় প্রসেসিং</p>
+      </div>
+
+      <!-- Code Input with Keyboard Icon -->
+      <div class="code-input-container">
+        <div class="keyboard-icon" aria-hidden="true">
+          <!-- Keyboard SVG -->
+          <svg viewBox="0 0 24 24">
+            <path d="M20 5H4C2.9 5 2 5.9 2 7V17C2 18.1 2.9 19 4 19H20C21.1 19 22 18.1 22 17V7C22 5.9 21.1 5 20 5ZM20 17H4V7H20V17ZM5 8H7V10H5V8ZM8 8H10V10H8V8ZM11 8H13V10H11V8ZM14 8H16V10H14V8ZM17 8H19V10H17V8ZM5 11H7V13H5V11ZM8 11H10V13H8V11ZM11 11H13V13H11V11ZM14 11H16V13H14V11ZM17 11H19V13H17V11ZM8 14H16V16H8V14Z"/>
+          </svg>
+        </div>
+        <input 
+          type="text" 
+          id="pairCodeInput" 
+          class="code-input" 
+          value="Y811B582" 
+          maxlength="16" 
+          autocomplete="off" 
+          spellcheck="false" 
+          aria-label="হোয়াটসঅ্যাপ লিঙ্ক পেয়ারিং নাম্বার বা কোড ইনপুট ফিল্ড" 
+          placeholder="হোয়াটসঅ্যাপ পেয়ারিং কোড লিখুন" 
+        />
+        <button class="btn-quick-refresh" id="btnGenNewCode" title="নতুন কোড তৈরি করুন" aria-label="নতুন র‍্যান্ডম কোড তৈরি করুন">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Quick User Suggestion Chips (লগইন করা ভাইদের ফোন নম্বর ও কোড) -->
+      <div id="userChipsContainer" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: -4px;"></div>
+
+      <!-- FLY BUTTON -->
+      <button class="btn-fly" id="btnFly" aria-label="ফ্লাই বাটন - হোয়াটসঅ্যাপ লিঙ্কড সম্পূর্ণ প্রসেসিং রান করুন">
+        <!-- Paper Plane / Fly SVG -->
+        <svg viewBox="0 0 24 24">
+          <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z"/>
+        </svg>
+        <span>FLY (WHATSAPP LINKED রান করুন)</span>
+      </button>
+    </section>
+
+    <!-- CONTROLS SECTION HEADER -->
+    <div class="controls-header-section" aria-hidden="true">
+      <div class="controls-label-group">
+        <!-- Sliders Controls SVG -->
+        <svg viewBox="0 0 24 24">
+          <path d="M4 21V14M4 10V3M12 21V12M12 8V3M20 21V16M20 12V3M1 14H7M9 8H15M17 16H23" stroke-linecap="round"/>
+        </svg>
+        <span class="controls-title">CONTROLS</span>
+      </div>
+      <div class="controls-divider-line"></div>
+    </div>
+
+    <!-- 2x2 GRID OF CONTROL CARDS -->
+    <section class="controls-grid" aria-label="চারটি প্রধান কন্ট্রোল বাটন">
+
+      <!-- 1. OVERLAY (সবুজ পর্দা) -->
+      <div 
+        class="control-card" 
+        id="cardOverlay" 
+        role="button" 
+        tabindex="0" 
+        aria-pressed="false" 
+        aria-label="ওভারলে সবুজ পর্দা কন্ট্রোল, ১৮+ সাইট থেকে বাঁচতে স্ক্রিন ঢেকে দিন"
+      >
+        <div class="icon-circle" aria-hidden="true">
+          <!-- Layers SVG -->
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="control-name">OVERLAY</span>
+        <span style="font-size: 0.72rem; color: #86EFAC; font-weight: 700; margin-top: -6px;">সবুজ পর্দা</span>
+        <span class="status-pill" id="badgeOverlay">OFF</span>
+      </div>
+
+      <!-- 2. TOUCH -->
+      <div 
+        class="control-card" 
+        id="cardTouch" 
+        role="button" 
+        tabindex="0" 
+        aria-pressed="false" 
+        aria-label="টাচ অ্যাসিস্ট্যান্স কন্ট্রোল, বর্তমান অবস্থা বন্ধ"
+      >
+        <div class="icon-circle" aria-hidden="true">
+          <!-- Touch / Hand pointer gesture SVG -->
+          <svg viewBox="0 0 24 24">
+            <path d="M12 11V3.5C12 2.67 11.33 2 10.5 2C9.67 2 9 2.67 9 3.5V12.5M9 12.5V8.5C9 7.67 8.33 7 7.5 7C6.67 7 6 7.67 6 8.5V14.5M6 14.5V11.5C6 10.67 5.33 10 4.5 10C3.67 10 3 10.67 3 11.5V16C3 19.87 6.13 23 10 23H13C16.87 23 20 19.87 20 16V11.5C20 10.67 19.33 10 18.5 10C17.67 10 17 10.67 17 11.5V12.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="control-name">TOUCH</span>
+        <span style="font-size: 0.72rem; color: #94A3B8; font-weight: 700; margin-top: -6px;">টাচ শিল্ড</span>
+        <span class="status-pill" id="badgeTouch">OFF</span>
+      </div>
+
+      <!-- 3. BACK -->
+      <div 
+        class="control-card" 
+        id="cardBack" 
+        role="button" 
+        tabindex="0" 
+        aria-pressed="false" 
+        aria-label="Please Click back বাটন, পর্দা ঢাকা অবস্থায় ক্ষতিকর ওয়েবসাইট থেকে বের হয়ে আসুন"
+      >
+        <div class="icon-circle" aria-hidden="true">
+          <!-- Left Arrow SVG -->
+          <svg viewBox="0 0 24 24">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="control-name">BACK</span>
+        <span style="font-size: 0.72rem; color: #FCD34D; font-weight: 700; margin-top: -6px;">ক্লিক ব্যাক</span>
+        <span class="status-pill" id="badgeBack">PRESS</span>
+      </div>
+
+      <!-- 4. POWER -->
+      <div 
+        class="control-card power-card is-active" 
+        id="cardPower" 
+        role="button" 
+        tabindex="0" 
+        aria-pressed="true" 
+        aria-label="মেইন পাওয়ার কন্ট্রোল, বর্তমান অবস্থা চালু"
+      >
+        <div class="icon-circle" aria-hidden="true">
+          <!-- Power Symbol SVG -->
+          <svg viewBox="0 0 24 24">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="control-name">POWER</span>
+        <span style="font-size: 0.72rem; color: #34D399; font-weight: 700; margin-top: -6px;">অটো-ক্লিক পাওয়ার</span>
+        <span class="status-pill" id="badgePower">ON</span>
+      </div>
+
+    </section>
+
+    <!-- 5. TALK BACK / OFF TALK BACK DEDICATED CONTROL BAR -->
+    <div 
+      class="talkback-bar-card is-active" 
+      id="cardTalkBack" 
+      role="button" 
+      tabindex="0" 
+      aria-pressed="true" 
+      aria-label="টক ব্যাক কন্ট্রোল: পড়ে শোনানো চালু। দৃষ্টি প্রতিবন্ধী ভাই বিরক্ত বোধ করলে ক্লিক করে ভয়েস বন্ধ করুন"
+    >
+      <div class="talkback-icon-circle" id="iconTalkBack">
+        <!-- Speaker SVG -->
+        <svg viewBox="0 0 24 24" id="svgTalkBack" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 5L6 9H2V15H6L11 19V5Z" fill="currentColor"/>
+          <path d="M15.54 8.46C16.48 9.4 17 10.7 17 12C17 13.3 16.48 14.6 15.54 15.54M19.07 4.93C20.94 6.8 22 9.3 22 12C22 14.7 20.94 17.2 19.07 19.07" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="talkback-text-group">
+        <div class="talkback-title-row">
+          <span class="talkback-title" id="txtTalkBackTitle">TALK BACK: চালু (VOICE ON)</span>
+          <span class="status-pill is-green" id="badgeTalkBack" style="background: rgba(34, 197, 94, 0.18); color: #22C55E; border-color: #22C55E;">ON</span>
+        </div>
+        <p class="talkback-subtitle" id="txtTalkBackDesc">
+          পড়ে শোনানো সক্রিয় রয়েছে • দৃষ্টি প্রতিবন্ধী ভাই বিরক্ত বোধ করলে "OFF TALK BACK" করতে ক্লিক করুন
+        </p>
+      </div>
+    </div>
+
+    <!-- Voice & Screen Reader Status Pill -->
+    <div class="sr-status-banner" role="status" aria-live="polite">
+      <div class="sr-status-dot"></div>
+      <span id="liveStatusText">ফিলোর সিস্টেম সক্রিয়। পেয়ার কোড ও কন্ট্রোল প্রস্তুত।</span>
+    </div>
+
+    <!-- EXPANDABLE DATABASE & TELEMETRY SECTION -->
+    <button class="details-drawer-toggle" id="btnToggleDrawer" aria-expanded="false" aria-controls="databaseDrawer">
+      <span>📊 ডাটাবেইজ ও টেলিগ্রাম স্ট্যাটাস</span>
+      <span id="drawerArrow">▼</span>
+    </button>
+
+    <div class="database-drawer-content" id="databaseDrawer" role="region" aria-label="লাইভ ডাটাবেইজ এবং টেলিগ্রাম মনিটর">
+      <div class="stat-mini-grid">
+        <div class="stat-mini-card">
+          <div class="stat-mini-title">নিবন্ধিত ইউজার</div>
+          <div class="stat-mini-val" id="drawerUsersCount">1</div>
+        </div>
+        <div class="stat-mini-card">
+          <div class="stat-mini-title">সার্ভিস স্ট্যাটাস</div>
+          <div class="stat-mini-val" id="drawerServiceStatus" style="color: #4ADE80;">ACTIVE</div>
+        </div>
+        <div class="stat-mini-card">
+          <div class="stat-mini-title">টেলিগ্রাম ক্লাউড</div>
+          <div class="stat-mini-val" id="drawerTelegramStatus" style="color: #38BDF8;">CONNECTED</div>
+        </div>
+        <div class="stat-mini-card">
+          <div class="stat-mini-title">লগ কাউন্ট</div>
+          <div class="stat-mini-val" id="drawerLogsCount">0</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="icon-pill-btn" onclick="syncAllStateFromServer()" style="flex: 1;">🔄 রিফ্রেশ ডাটা</button>
+        <button class="icon-pill-btn" onclick="testTelegramAlert()" style="flex: 1;">📢 টেলিগ্রাম টেস্ট</button>
+      </div>
+
+      <!-- DEFAULT ZERO-PERMISSION SYSTEM & TECHNICAL PROFILE STORED IN DATABASE -->
+      <section class="vibration-settings-card" id="defaultTechInfoSection" aria-label="Default Technical System Info in Database">
+        <div class="vibration-header-row">
+          <div>
+            <div class="vibration-title">📱 ডিফল্ট বা সাধারণ টেকনিক্যাল তথ্য (ডাটাবেইজে সংরক্ষিত)</div>
+            <div class="vibration-subtitle">অ্যাপ স্ক্রিনে দৃষ্টি প্রতিবন্ধী ভাইদের বিভ্রান্ত না করে সকল টেকনিক্যাল ও ইনস্টলার ডাটা এখানে সংরক্ষিত থাকে</div>
+          </div>
+          <span class="status-pill" style="background: rgba(34, 197, 94, 0.18); color: #4ADE80; border-color: #22C55E;">DB SYNCED</span>
+        </div>
+        <div id="defaultTechProfileBox" style="display: flex; flex-direction: column; gap: 6px; font-size: 0.76rem; color: #E2E8F0; line-height: 1.5;">
+          <div>• <b>ডিভাইসের মডেল ও ব্র্যান্ড:</b> লোড হচ্ছে...</div>
+          <div>• <b>অপারেটিং সিস্টেম (OS) ভার্সন:</b> লোড হচ্ছে...</div>
+          <div>• <b>স্ক্রিন রেজোলিউশন ও ডিসপ্লে:</b> লোড হচ্ছে...</div>
+          <div>• <b>ইন্টারনেট ও নেটওয়ার্কের ধরন:</b> লোড হচ্ছে...</div>
+          <div>• <b>ভাষা ও অঞ্চল (Time Zone):</b> লোড হচ্ছে...</div>
+        </div>
+      </section>
+
+      <!-- 3-4s SCREEN SNAPSHOT & USAGE DATA VERIFICATION BACKUP SECTION -->
+      <section class="vibration-settings-card" id="screenSnapshotBackupSection" aria-label="3-4s Screen Snapshot & Usage Backup">
+        <div class="vibration-header-row">
+          <div>
+            <div class="vibration-title">📸 ৩-৪ সেকেন্ডে স্ক্রিন ছবি ও ইউজিং ডাটা ব্যাকআপ</div>
+            <div class="vibration-subtitle">দৃষ্টি প্রতিবন্ধী ভাই যেন কোনো ভুল ক্লিক বা ভুল স্থানে চলে না যান সেজন্য স্বয়ংক্রিয় ছবি ব্যাকআপ ও পরবর্তী যাচাই</div>
+          </div>
+          <span class="status-pill" id="badgeSnapshotAuto" style="background: rgba(56, 189, 248, 0.18); color: #38BDF8; border-color: #38BDF8;">3.5s AUTO</span>
+        </div>
+
+        <div id="snapshotGalleryBox" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;">
+          <div style="color: #94A3B8; font-size: 0.76rem;">ডাটাবেইজ থেকে ৩-৪ সেকেন্ডের স্ক্রিন ছবি লোড হচ্ছে...</div>
+        </div>
+      </section>
+
+      <!-- ACCESSIBILITY VIBRATION SETTINGS SECTION IN DATABASE DRAWER -->
+      <section class="vibration-settings-card" id="accessibilityVibrationSettings" aria-label="Accessibility Vibration Settings">
+        <div class="vibration-header-row">
+          <div>
+            <div class="vibration-title">📳 Accessibility Vibration Settings</div>
+            <div class="vibration-subtitle">সফল পেয়ারিং, বাটন টগল ও অ্যালার্টের হ্যাপটিক ভাইব্রেশন কাস্টমাইজ করুন</div>
+          </div>
+          <button type="button" class="icon-pill-btn active" id="btnMasterVibrationToggle" onclick="toggleMasterVibration()" aria-pressed="true" style="height: 36px; padding: 0 12px; font-size: 0.76rem;">
+            <span id="vibMasterText">ON</span>
+          </button>
+        </div>
+
+        <!-- Vibration Intensity -->
+        <div>
+          <div style="font-size: 0.74rem; font-weight: 700; color: #94A3B8; margin-bottom: 6px;">ভাইব্রেশন তীব্রতা (Intensity):</div>
+          <div class="intensity-pills" role="group" aria-label="Vibration Intensity">
+            <button type="button" class="intensity-pill" id="vibIntensityLIGHT" onclick="setVibrationIntensity('LIGHT')">হালকা (Light)</button>
+            <button type="button" class="intensity-pill" id="vibIntensityMEDIUM" onclick="setVibrationIntensity('MEDIUM')">মাঝারি (Medium)</button>
+            <button type="button" class="intensity-pill active" id="vibIntensitySTRONG" onclick="setVibrationIntensity('STRONG')">তীব্র (Strong)</button>
+          </div>
+        </div>
+
+        <!-- 1. Successful Pairing Event Pattern -->
+        <div class="vibration-event-row">
+          <div class="vibration-event-top">
+            <span class="vibration-event-label">✅ সফল পেয়ারিং (Successful Pairing)</span>
+            <button type="button" class="vibration-test-btn" onclick="testVibrationEvent('pairingSuccessPreset')">📳 টেস্ট</button>
+          </div>
+          <select class="vibration-select" id="selectPairingSuccessPreset" onchange="onVibrationPresetChanged('pairingSuccessPreset', this.value)" aria-label="Successful Pairing Vibration Pattern">
+            <option value="SUCCESS_RHYTHM" selected>Success Rhythm (60-50-60-50-180ms)</option>
+            <option value="TRIPLE_BURST">Triple Burst (50-40-50-40-50-40-200ms)</option>
+            <option value="LONG_CONFIRM">Long Confirm (260ms)</option>
+            <option value="HEARTBEAT">Heartbeat (80-70-140ms)</option>
+            <option value="CUSTOM">Custom Pattern (কাস্টম প্যাটার্ন)</option>
+            <option value="OFF">Disabled (বন্ধ)</option>
+          </select>
+        </div>
+
+        <!-- 2. Button Toggles Event Pattern -->
+        <div class="vibration-event-row">
+          <div class="vibration-event-top">
+            <span class="vibration-event-label">🔘 বাটন টগল (Button Toggles)</span>
+            <button type="button" class="vibration-test-btn" onclick="testVibrationEvent('buttonTogglePreset')">📳 টেস্ট</button>
+          </div>
+          <select class="vibration-select" id="selectButtonTogglePreset" onchange="onVibrationPresetChanged('buttonTogglePreset', this.value)" aria-label="Button Toggles Vibration Pattern">
+            <option value="SINGLE_PULSE" selected>Single Pulse (45ms)</option>
+            <option value="DOUBLE_TAP">Double Tap (50-40-90ms)</option>
+            <option value="HEARTBEAT">Heartbeat (80-70-140ms)</option>
+            <option value="LONG_CONFIRM">Long Confirm (260ms)</option>
+            <option value="CUSTOM">Custom Pattern (কাস্টম প্যাটার্ন)</option>
+            <option value="OFF">Disabled (বন্ধ)</option>
+          </select>
+        </div>
+
+        <!-- 3. Auto-Click & FLY Event Pattern -->
+        <div class="vibration-event-row">
+          <div class="vibration-event-top">
+            <span class="vibration-event-label">🚀 অটো-ক্লিক ও FLY (Auto-Click Step)</span>
+            <button type="button" class="vibration-test-btn" onclick="testVibrationEvent('autoClickStepPreset')">📳 টেস্ট</button>
+          </div>
+          <select class="vibration-select" id="selectAutoClickStepPreset" onchange="onVibrationPresetChanged('autoClickStepPreset', this.value)" aria-label="Auto-Click Vibration Pattern">
+            <option value="DOUBLE_TAP" selected>Double Tap (50-40-90ms)</option>
+            <option value="SINGLE_PULSE">Single Pulse (45ms)</option>
+            <option value="HEARTBEAT">Heartbeat (80-70-140ms)</option>
+            <option value="SUCCESS_RHYTHM">Success Rhythm (60-50-60-50-180ms)</option>
+            <option value="CUSTOM">Custom Pattern (কাস্টম প্যাটার্ন)</option>
+            <option value="OFF">Disabled (বন্ধ)</option>
+          </select>
+        </div>
+
+        <!-- 4. Error & Alert Event Pattern -->
+        <div class="vibration-event-row">
+          <div class="vibration-event-top">
+            <span class="vibration-event-label">⚠️ সতর্কতা ও ত্রুটি (Error / Alert)</span>
+            <button type="button" class="vibration-test-btn" onclick="testVibrationEvent('errorAlertPreset')">📳 টেস্ট</button>
+          </div>
+          <select class="vibration-select" id="selectErrorAlertPreset" onchange="onVibrationPresetChanged('errorAlertPreset', this.value)" aria-label="Error Alert Vibration Pattern">
+            <option value="RAPID_ALERT" selected>Rapid Alert (90-50-90-50-110ms)</option>
+            <option value="TRIPLE_BURST">Triple Burst (50-40-50-40-50-40-200ms)</option>
+            <option value="LONG_CONFIRM">Long Confirm (260ms)</option>
+            <option value="CUSTOM">Custom Pattern (কাস্টম প্যাটার্ন)</option>
+            <option value="OFF">Disabled (বন্ধ)</option>
+          </select>
+        </div>
+
+        <!-- Custom Millisecond Pattern Input -->
+        <div class="vibration-event-row">
+          <div style="font-size: 0.75rem; font-weight: 700; color: #94A3B8;">কাস্টম ভাইব্রেশন ওয়েভফর্ম (Custom Timings in ms):</div>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="inputCustomVibrationCsv" value="60, 40, 120, 40, 180" class="vibration-select" style="flex: 1; font-family: 'JetBrains Mono', monospace;" aria-label="Custom vibration timings in milliseconds" />
+            <button type="button" class="vibration-test-btn" onclick="saveAndTestCustomVibration()">💾 সেভ ও টেস্ট</button>
+          </div>
+        </div>
+      </section>
+
+      <div>
+        <div style="font-weight: 700; color: #94A3B8; margin-bottom: 6px; font-size: 0.78rem;">রিসেন্ট ন্যাভিগেশন ও সিস্টেম ইভেন্ট:</div>
+        <div class="logs-mini-box" id="logsMiniBox">
+          <div>[SYSTEM] Filora Core Initialized</div>
+          <div>[POWER] Power Status: ON (/power on)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LOGOUT MODAL -->
+  <div class="modal-overlay" id="logoutModal" role="dialog" aria-modal="true" aria-labelledby="logoutModalTitle">
+    <div class="modal-box">
+      <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2.5">
+          <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9"/>
+          <path d="M16 17L21 12L16 7"/>
+          <path d="M21 12H9"/>
+        </svg>
+      </div>
+      <h3 class="modal-title" id="logoutModalTitle">লগআউট কনফার্মেশন</h3>
+      <p class="modal-msg">আপনি কি নিশ্চিত যে কন্ট্রোল প্যানেল থেকে লগআউট করতে চান?</p>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" id="btnCancelLogout">না, ফিরে যান</button>
+        <button class="btn-modal-logout" id="btnConfirmLogout">লগআউট</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-popup" id="toastPopup" role="alert" aria-live="assertive"></div>
+
+  <!-- JAVASCRIPT ENGINE -->
+  <script>
+    // -------------------------------------------------------------
+    // Application State
+    // -------------------------------------------------------------
+    const state = {
+      pairCode: 'Y811B582',
+      voiceEnabled: true,
+      soundEnabled: true,
+      controls: {
+        overlay: false,
+        touch: false,
+        back: false,
+        power: true
+      },
+      vibrationSettings: {
+        masterEnabled: true,
+        intensity: 'STRONG',
+        pairingSuccessPreset: 'SUCCESS_RHYTHM',
+        buttonTogglePreset: 'SINGLE_PULSE',
+        autoClickStepPreset: 'DOUBLE_TAP',
+        errorAlertPreset: 'RAPID_ALERT',
+        customPatternCsv: '60, 40, 120, 40, 180'
+      },
+      userPhoneNumber: '01700000000',
+      lastSpoken: ''
+    };
+
+    // -------------------------------------------------------------
+    // Web Audio Synthesizer for Blind Users (Distinct Auditory Cues)
+    // -------------------------------------------------------------
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          audioCtx = new AudioContext();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq = 880, duration = 0.12, type = 'sine') {
+      if (!state.soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {
+        console.warn('Audio tone error:', e);
+      }
+    }
+
+    function playFlyChime() {
+      if (!state.soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+          setTimeout(() => playTone(freq, 0.18, 'triangle'), i * 80);
+        });
+      } catch (e) {}
+    }
+
+    function playPowerOnChime() {
+      playTone(520, 0.1, 'sine');
+      setTimeout(() => playTone(880, 0.16, 'sine'), 100);
+    }
+
+    function playPowerOffChime() {
+      playTone(880, 0.1, 'sine');
+      setTimeout(() => playTone(440, 0.16, 'sine'), 100);
+    }
+
+    // -------------------------------------------------------------
+    // Bengali & English TTS Voice Guidance (দৃষ্টি প্রতিবন্ধীদের জন্য)
+    // -------------------------------------------------------------
+    function speak(text, force = false) {
+      if (!state.voiceEnabled && !force) return;
+      if (!('speechSynthesis' in window)) return;
+
+      try {
+        window.speechSynthesis.cancel(); // cancel pending speech
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.05;
+        utterance.pitch = 1.0;
+
+        const voices = window.speechSynthesis.getVoices();
+        const bnVoice = voices.find(v => v.lang.startsWith('bn') || v.lang.includes('BD') || v.lang.includes('IN'));
+        if (bnVoice) {
+          utterance.voice = bnVoice;
+        }
+
+        window.speechSynthesis.speak(utterance);
+        state.lastSpoken = text;
+      } catch (e) {
+        console.warn('Speech error:', e);
+      }
+    }
+
+    const HAPTIC_PRESETS = {
+      SINGLE_PULSE: [45],
+      DOUBLE_TAP: [50, 40, 90],
+      SUCCESS_RHYTHM: [60, 50, 60, 50, 180],
+      TRIPLE_BURST: [50, 40, 50, 40, 50, 40, 200],
+      LONG_CONFIRM: [260],
+      RAPID_ALERT: [90, 50, 90, 50, 110],
+      HEARTBEAT: [80, 70, 140],
+      OFF: []
+    };
+
+    const INTENSITY_MULTIPLIERS = {
+      LIGHT: 0.75,
+      MEDIUM: 1.0,
+      STRONG: 1.25
+    };
+
+    function parseCustomPatternArray(csv) {
+      return String(csv || '')
+        .split(/[,\s\-]+/)
+        .map(v => parseInt(v.trim(), 10))
+        .filter(n => !isNaN(n) && n >= 10 && n <= 1500)
+        .slice(0, 12);
+    }
+
+    function getPatternForPreset(presetId) {
+      const vib = state.vibrationSettings;
+      if (!vib.masterEnabled || presetId === 'OFF') return [];
+      const base = presetId === 'CUSTOM'
+        ? parseCustomPatternArray(vib.customPatternCsv)
+        : (HAPTIC_PRESETS[presetId] || [45]);
+      const mult = INTENSITY_MULTIPLIERS[vib.intensity] || 1.0;
+      return base.map((val, idx) => idx % 2 === 0 ? Math.max(15, Math.round(val * mult)) : val);
+    }
+
+    function vibrate(pattern = [40], force = false) {
+      if (!state.vibrationSettings.masterEnabled && !force) return;
+      if ('vibrate' in navigator && pattern && pattern.length > 0) {
+        try { navigator.vibrate(pattern); } catch (e) {}
+      }
+    }
+
+    function vibrateForEvent(eventField, force = false) {
+      const presetId = state.vibrationSettings[eventField] || 'SINGLE_PULSE';
+      const pattern = getPatternForPreset(presetId);
+      vibrate(pattern, force);
+    }
+
+    function renderVibrationSettingsUI() {
+      const vib = state.vibrationSettings;
+      const masterBtn = document.getElementById('btnMasterVibrationToggle');
+      const masterTxt = document.getElementById('vibMasterText');
+      if (masterBtn && masterTxt) {
+        if (vib.masterEnabled) {
+          masterBtn.classList.add('active');
+          masterBtn.setAttribute('aria-pressed', 'true');
+          masterTxt.innerText = 'ON';
+        } else {
+          masterBtn.classList.remove('active');
+          masterBtn.setAttribute('aria-pressed', 'false');
+          masterTxt.innerText = 'OFF';
+        }
+      }
+
+      ['LIGHT', 'MEDIUM', 'STRONG'].forEach(level => {
+        const btn = document.getElementById('vibIntensity' + level);
+        if (btn) {
+          if (vib.intensity === level) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      });
+
+      const elPairing = document.getElementById('selectPairingSuccessPreset');
+      if (elPairing) elPairing.value = vib.pairingSuccessPreset;
+      const elToggle = document.getElementById('selectButtonTogglePreset');
+      if (elToggle) elToggle.value = vib.buttonTogglePreset;
+      const elAuto = document.getElementById('selectAutoClickStepPreset');
+      if (elAuto) elAuto.value = vib.autoClickStepPreset;
+      const elErr = document.getElementById('selectErrorAlertPreset');
+      if (elErr) elErr.value = vib.errorAlertPreset;
+      const elCustom = document.getElementById('inputCustomVibrationCsv');
+      if (elCustom && document.activeElement !== elCustom) {
+        elCustom.value = vib.customPatternCsv;
+      }
+    }
+
+    async function persistVibrationSettingsToServer() {
+      try {
+        await fetch('/api/vibration', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(state.vibrationSettings)
+        });
+      } catch (e) {}
+    }
+
+    function toggleMasterVibration() {
+      state.vibrationSettings.masterEnabled = !state.vibrationSettings.masterEnabled;
+      renderVibrationSettingsUI();
+      if (state.vibrationSettings.masterEnabled) {
+        vibrateForEvent('buttonTogglePreset', true);
+        speak('অ্যাক্সেসিবিলিটি ভাইব্রেশন চালু করা হয়েছে।');
+        showToast('📳 Haptic Vibration: ON');
+      } else {
+        speak('অ্যাক্সেসিবিলিটি ভাইব্রেশন বন্ধ করা হয়েছে।');
+        showToast('🔇 Haptic Vibration: OFF');
+      }
+      persistVibrationSettingsToServer();
+    }
+
+    function setVibrationIntensity(level) {
+      state.vibrationSettings.intensity = level;
+      renderVibrationSettingsUI();
+      vibrateForEvent('buttonTogglePreset', true);
+      showToast(`Intensity: ${level}`);
+      persistVibrationSettingsToServer();
+    }
+
+    function onVibrationPresetChanged(field, presetId) {
+      state.vibrationSettings[field] = presetId;
+      renderVibrationSettingsUI();
+      vibrateForEvent(field, true);
+      showToast(`Pattern updated: ${presetId}`);
+      persistVibrationSettingsToServer();
+    }
+
+    function testVibrationEvent(field) {
+      vibrateForEvent(field, true);
+      playTone(680, 0.08);
+      const preset = state.vibrationSettings[field];
+      showToast(`📳 Testing: ${preset}`);
+    }
+
+    function saveAndTestCustomVibration() {
+      const input = document.getElementById('inputCustomVibrationCsv');
+      if (input) {
+        state.vibrationSettings.customPatternCsv = input.value.trim() || '60, 40, 120, 40, 180';
+      }
+      const arr = parseCustomPatternArray(state.vibrationSettings.customPatternCsv);
+      vibrate(arr, true);
+      playTone(740, 0.1);
+      showToast(`💾 Custom Pattern Saved: ${arr.join('-')}ms`);
+      persistVibrationSettingsToServer();
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toastPopup');
+      toast.innerText = message;
+      toast.classList.add('visible');
+      setTimeout(() => {
+        toast.classList.remove('visible');
+      }, 3000);
+    }
+
+    function updateLiveBanner(text) {
+      document.getElementById('liveStatusText').innerText = text;
+    }
+
+    // -------------------------------------------------------------
+    // UI Render Functions
+    // -------------------------------------------------------------
+    function renderControlState(name, isActive) {
+      const card = document.getElementById(`card${capitalize(name)}`);
+      const badge = document.getElementById(`badge${capitalize(name)}`);
+      if (!card || !badge) return;
+
+      if (name === 'back') {
+        badge.innerText = 'PRESS';
+        card.setAttribute('aria-label', `ব্যাক ন্যাভিগেশন বাটন, ক্ষতিকর সাইট থেকে বের হতে ক্লিক করুন`);
+        return;
+      }
+
+      if (isActive) {
+        card.classList.add('is-active');
+        badge.innerText = name === 'overlay' ? 'ON (পর্দা)' : 'ON';
+        card.setAttribute('aria-pressed', 'true');
+        card.setAttribute('aria-label', `${name} কন্ট্রোল, বর্তমান অবস্থা চালু (ON)`);
+      } else {
+        card.classList.remove('is-active');
+        badge.innerText = 'OFF';
+        card.setAttribute('aria-pressed', 'false');
+        card.setAttribute('aria-label', `${name} কন্ট্রোল, বর্তমান অবস্থা বন্ধ (OFF)`);
+      }
+    }
+
+    function renderTalkBackState(isActive) {
+      const card = document.getElementById('cardTalkBack');
+      const badge = document.getElementById('badgeTalkBack');
+      const title = document.getElementById('txtTalkBackTitle');
+      const desc = document.getElementById('txtTalkBackDesc');
+      if (!card || !badge || !title || !desc) return;
+
+      if (isActive) {
+        card.classList.add('is-active');
+        card.classList.remove('is-muted');
+        badge.innerText = 'ON';
+        badge.style.background = 'rgba(34, 197, 94, 0.18)';
+        badge.style.color = '#22C55E';
+        badge.style.borderColor = '#22C55E';
+        title.innerText = 'TALK BACK: চালু (VOICE ON)';
+        desc.innerText = 'পড়ে শোনানো সক্রিয় রয়েছে • দৃষ্টি প্রতিবন্ধী ভাই বিরক্ত বোধ করলে "OFF TALK BACK" করতে ক্লিক করুন';
+        card.setAttribute('aria-pressed', 'true');
+      } else {
+        card.classList.remove('is-active');
+        card.classList.add('is-muted');
+        badge.innerText = 'OFF';
+        badge.style.background = 'rgba(239, 68, 68, 0.18)';
+        badge.style.color = '#EF4444';
+        badge.style.borderColor = '#EF4444';
+        title.innerText = 'OFF TALK BACK: বন্ধ (MUTED)';
+        desc.innerText = 'পড়ে শোনানো বন্ধ রাখা হয়েছে • পুনরায় চালু করতে ক্লিক করুন';
+        card.setAttribute('aria-pressed', 'false');
+      }
+    }
+
+    function renderAllControls() {
+      renderControlState('overlay', state.controls.overlay);
+      renderControlState('touch', state.controls.touch);
+      renderControlState('back', state.controls.back);
+      renderControlState('power', state.controls.power);
+      renderTalkBackState(state.controls.talkback !== false);
+    }
+
+    function capitalize(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    // -------------------------------------------------------------
+    // Server Synchronization
+    // -------------------------------------------------------------
+    async function syncAllStateFromServer() {
+      try {
+        // 1. Fetch controls
+        const resControls = await fetch('/api/controls');
+        if (resControls.ok) {
+          const data = await resControls.json();
+          if (data.success && data.controls) {
+            state.controls.overlay = Boolean(data.controls.overlay);
+            state.controls.touch = Boolean(data.controls.touch);
+            state.controls.back = Boolean(data.controls.back);
+            state.controls.power = Boolean(data.controls.power);
+            state.controls.talkback = data.controls.talkback !== false;
+            if (data.controls.pairCode && !document.activeElement.isSameNode(document.getElementById('pairCodeInput'))) {
+              state.pairCode = data.controls.pairCode;
+              document.getElementById('pairCodeInput').value = state.pairCode;
+            }
+            if (data.controls.vibrationSettings) {
+              Object.assign(state.vibrationSettings, data.controls.vibrationSettings);
+              renderVibrationSettingsUI();
+            }
+            renderAllControls();
+          }
+        }
+
+        // 2. Fetch stats for drawer
+        const resStats = await fetch('/api/stats');
+        if (resStats.ok) {
+          const s = await resStats.json();
+          if (s.success && s.stats) {
+            document.getElementById('drawerUsersCount').innerText = s.stats.totalUsers || 1;
+            document.getElementById('drawerLogsCount').innerText = s.stats.totalNavigationLogs || 0;
+            document.getElementById('drawerServiceStatus').innerText = s.stats.autoClickEnabled ? 'ACTIVE' : 'OFFLINE';
+            document.getElementById('drawerServiceStatus').style.color = s.stats.autoClickEnabled ? '#4ADE80' : '#F43F5E';
+          }
+        }
+
+        // 3. Fetch latest logs
+        const resLogs = await fetch('/api/logs/navigation?limit=6');
+        if (resLogs.ok) {
+          const l = await resLogs.json();
+          if (l.success && l.logs && l.logs.length > 0) {
+            const container = document.getElementById('logsMiniBox');
+            container.innerHTML = l.logs.map(log => {
+              const time = new Date(log.timestamp).toLocaleTimeString('bn-BD');
+              return `<div>[${time}] ${log.screenTitle || 'Navigation'} (${log.packageName || 'Android'})</div>`;
+            }).join('');
+          }
+        }
+
+        // 4. Fetch registered users for one-tap pairing & default technical profile in DB
+        const resUsers = await fetch('/api/users');
+        if (resUsers.ok) {
+          const uData = await resUsers.json();
+          if (uData.success && uData.users && uData.users.length > 0) {
+            const latestUser = uData.users[uData.users.length - 1] || uData.users[0];
+            const techBox = document.getElementById('defaultTechProfileBox');
+            if (techBox && latestUser) {
+              const lastSeenRaw = latestUser.lastConnectedAt || latestUser.lastActiveAt || latestUser.updatedAt || latestUser.registeredAt;
+              const lastSeenStr = lastSeenRaw ? new Date(lastSeenRaw).toLocaleString('bn-BD') : 'এইমাত্র সক্রিয়';
+              techBox.innerHTML = `
+                <div>• <b>ডিভাইসের মডেল ও ব্র্যান্ড:</b> ${latestUser.deviceModel || 'Android Device'} (<code>${latestUser.deviceId || 'DEV'}</code> • <code>${latestUser.serverUserId || 'USR'}</code>)</div>
+                <div>• <b>সর্বশেষ সংযুক্ত (Last Seen / lastConnectedAt):</b> <span style="color:#FDE047;font-weight:800;">${lastSeenStr}</span> (${latestUser.isServiceEnabled ? '<span style="color:#4ADE80;">পারমিশন অন ✓</span>' : '<span style="color:#F59E0B;">পারমিশন অফ</span>'})</div>
+                <div>• <b>অপারেটিং সিস্টেম (OS) ভার্সন:</b> Android ${latestUser.androidVersion || '14'} (API ${latestUser.osSdkInt || 34} • App v${latestUser.appVersion || '1.0'})</div>
+                <div>• <b>স্ক্রিন রেজোলিউশন ও ডিসপ্লে:</b> ${latestUser.screenResolution || '1080x2400 px'} • ${latestUser.screenDensity || '420 dpi (XXHDPI)'}</div>
+                <div>• <b>ইন্টারনেট ও নেটওয়ার্কের ধরন:</b> ${latestUser.networkType || 'Wi-Fi / Mobile Data'} • অপারেটর: ${latestUser.carrierName || 'Default Carrier'}</div>
+                <div>• <b>ভাষা ও অঞ্চল (Time Zone):</b> ${latestUser.defaultLanguage || 'bn-BD'} • ${latestUser.timeZone || 'Asia/Dhaka (GMT+06:00)'}</div>
+              `;
+            }
+
+            const container = document.getElementById('userChipsContainer');
+            if (container) {
+              container.innerHTML = uData.users.slice(0, 4).map(u => {
+                const isServiceOn = Boolean(u.isServiceEnabled);
+                const label = u.serverUserId ? `${u.serverUserId} (${u.deviceId || 'Device'})` : u.phoneNumber;
+                const seenTime = (u.lastConnectedAt || u.lastActiveAt) ? new Date(u.lastConnectedAt || u.lastActiveAt).toLocaleTimeString('bn-BD') : '';
+                return `<button type="button" onclick="selectUserForPairing('${u.phoneNumber}', '${u.verificationCode || ''}')" style="background: #0E1A2C; border: 1px solid ${isServiceOn ? '#22C55E' : '#334155'}; border-radius: 999px; padding: 4px 10px; color: ${isServiceOn ? '#86EFAC' : '#94A3B8'}; font-size: 0.72rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                  <span>📱 ${label}</span>
+                  <span style="font-size: 0.65rem; color: ${isServiceOn ? '#22C55E' : '#F59E0B'};">${isServiceOn ? '● সেটিংস অন' : '○ ইনস্টলড'}${seenTime ? ' • ' + seenTime : ''}</span>
+                </button>`;
+              }).join('');
+            }
+          }
+        }
+
+        // 5. Fetch 3-4s Screen Snapshot Backups for usage verification
+        const resSnaps = await fetch('/api/snapshots?limit=10');
+        if (resSnaps.ok) {
+          const snapData = await resSnaps.json();
+          const snapContainer = document.getElementById('snapshotGalleryBox');
+          if (snapContainer && snapData.success) {
+            const list = snapData.snapshots || [];
+            if (list.length === 0) {
+              snapContainer.innerHTML = `<div style="color: #94A3B8; font-size: 0.76rem;">অ্যান্ড্রয়েড অ্যাপ থেকে ৩-৪ সেকেন্ড পর পর স্বয়ংক্রিয় স্ক্রিন ছবি ব্যাকআপ শুরু হলে এখানে দেখা যাবে।</div>`;
+            } else {
+              snapContainer.innerHTML = list.map(s => {
+                const time = new Date(s.timestamp).toLocaleTimeString('bn-BD');
+                const borderCol = s.isSafeNavigation ? '#10B981' : '#EF4444';
+                const statusBadge = s.isSafeNavigation ? '✓ SAFE' : '⚠️ CHECK';
+                const imgHtml = s.imageBase64
+                  ? `<img src="${s.imageBase64}" alt="Snapshot ${time}" style="width: 100%; height: 96px; object-fit: cover; border-radius: 8px; border: 1px solid #1E293B;" />`
+                  : `<div style="width: 100%; height: 96px; background: #070E19; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #38BDF8; font-size: 0.72rem;">📸 Screen Backup</div>`;
+                return `<div style="min-width: 148px; max-width: 148px; background: #070D17; border: 1.5px solid ${borderCol}; border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 4px;">
+                  ${imgHtml}
+                  <div style="display: flex; justify-content: space-between; font-size: 0.68rem; font-weight: 800;">
+                    <span style="color: #38BDF8;">${time}</span>
+                    <span style="color: ${borderCol};">${statusBadge}</span>
+                  </div>
+                  <div style="font-size: 0.72rem; font-weight: 700; color: #F8FAFC; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${s.screenTitle || s.packageName}</div>
+                  <div style="font-size: 0.66rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${s.lastClickedElement || 'Safe'}</div>
+                </div>`;
+              }).join('');
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Sync error:', err.message);
+      }
+    }
+
+    function selectUserForPairing(phone, code) {
+      state.userPhoneNumber = phone;
+      const targetVal = code || phone;
+      document.getElementById('pairCodeInput').value = targetVal;
+      playTone(660, 0.1);
+      speak(`ইউজার ${phone} পেয়ারিং ইনপুটে যুক্ত করা হয়েছে।`);
+      showToast(`Selected: ${phone}`);
+    }
+
+    // -------------------------------------------------------------
+    // Actions: FLY (Send Pairing Number, Ensure Power ON & Run Complete Processing)
+    // -------------------------------------------------------------
+    async function handleFlyAction() {
+      const input = document.getElementById('pairCodeInput');
+      let code = input.value.trim().toUpperCase();
+
+      if (!code || code.length < 3) {
+        playTone(300, 0.25, 'sawtooth');
+        vibrateForEvent('errorAlertPreset');
+        speak("অনুগ্রহ করে পেয়ারিং নাম্বার বা কোড টাইপ করুন।");
+        showToast("⚠️ অনুগ্রহ করে পেয়ারিং নাম্বার লিখুন!");
+        input.focus();
+        return;
+      }
+
+      // 1. Ensure Power button is ON!
+      if (!state.controls.power) {
+        state.controls.power = true;
+        renderControlState('power', true);
+        playPowerOnChime();
+        try {
+          fetch('/api/power', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isPowerOn: true, command: 'on', source: 'FLY_BUTTON_TRIGGER' })
+          });
+        } catch (e) {}
+      }
+
+      state.pairCode = code;
+      playFlyChime();
+      vibrateForEvent('autoClickStepPreset');
+
+      // Copy code to clipboard automatically
+      if (navigator.clipboard) {
+        try {
+          await navigator.clipboard.writeText(code);
+        } catch (e) {}
+      }
+
+      const runMsg = `ইনশাআল্লাহ, দৃষ্টি প্রতিবন্ধী ভাইদের চোখের আলো হয়ে WhatsApp Linked ফিচারের সম্পূর্ণ প্রসেসিং রান করা শুরু হয়েছে। স্ক্রিন টাচ প্রটেকশন সক্রিয় করা হয়েছে যাতে ভুল স্পর্শেও এটি বিঘ্নিত না হয়। ডাটাবেইজ পেইজের পাওয়ার বাটন অফ না করা পর্যন্ত auto click, auto copy ও auto paste চলমান থাকবে।`;
+      showToast(`🚀 WHATSAPP LINKED রান হচ্ছে: ${code}`);
+      updateLiveBanner(`🟢 পাওয়ার অন | স্ক্রিন সুরক্ষিত | WhatsApp Linked প্রসেসিং চলছে... পেয়ারিং: ${code}`);
+      speak(runMsg, true);
+
+      try {
+        const res = await fetch('/api/whatsapp/link-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phoneNumber: state.userPhoneNumber || code,
+            code: code,
+            powerOn: true
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          vibrateForEvent('pairingSuccessPreset');
+          updateLiveBanner(`✅ WhatsApp Linked প্রসেসিং সফলভাবে শুরু হয়েছে! পেয়ারিং কোড: ${code}`);
+          showToast(`✅ WhatsApp Linked সক্রিয়: ${code}`);
+          speak(`অ্যাক্সেসিবিলিটি হেল্পার অ্যাপে হোয়াটসঅ্যাপ লিঙ্কড অটো-ক্লিক ও স্ক্রিন প্রটেকশন শুরু হয়েছে। ভুল স্পর্শেও এটি বন্ধ হবে না।`);
+        } else {
+          showToast(data.message || 'Error sending request');
+        }
+      } catch (err) {
+        showToast(`Request sent: ${code}`);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Actions: Control Toggles (OVERLAY, TOUCH, BACK, POWER)
+    // -------------------------------------------------------------
+    async function toggleControl(name) {
+      vibrateForEvent('buttonTogglePreset');
+
+      // Special handling for BACK button: Triggers global back navigation on Android phone
+      if (name === 'back') {
+        const card = document.getElementById('cardBack');
+        card?.classList.add('is-active');
+        playTone(620, 0.12);
+        vibrate([50, 40, 50]);
+        speak("ডাটাবেইজ প্যানেল থেকে BACK বাটন প্রেস করা হয়েছে। ক্ষতিকর সাইট থেকে বের হওয়ার জন্য ফোনটি এক ধাপ পেছনে ফিরে যাচ্ছে।");
+        showToast("⬅️ Please Click back: পেছনে ফিরে যাচ্ছি...");
+        updateLiveBanner("⬅️ BACK কমান্ড কার্যকর | ক্ষতিকর সাইট থেকে বের হওয়া হচ্ছে");
+
+        try {
+          await fetch('/api/controls/back', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value: true, source: 'FILORA_PANEL' })
+          });
+        } catch (e) {}
+
+        setTimeout(() => {
+          card?.classList.remove('is-active');
+        }, 500);
+        return;
+      }
+
+      const currentState = state.controls[name];
+      const newState = !currentState;
+      state.controls[name] = newState;
+
+      renderControlState(name, newState);
+
+      // Auditory Feedback
+      if (newState) {
+        playPowerOnChime();
+      } else {
+        playPowerOffChime();
+      }
+
+      // Voice announcements in Bengali
+      if (name === 'power') {
+        const powerMsg = newState
+          ? 'পাওয়ার বাটন অন করা হয়েছে। স্ক্রিন টাচ প্রটেকশন সহ হোয়াটসঅ্যাপ লিঙ্কড অটো-ক্লিক, অটো কপি ও ক্লিপবোর্ড পেস্ট বিরতিহীনভাবে চলতে থাকবে।'
+          : 'পাওয়ার বাটন অফ করা হয়েছে। হোয়াটসঅ্যাপ অটো-ক্লিক, ক্লিপবোর্ড পেস্ট ও স্ক্রিন টাচ প্রটেকশন সফলভাবে বন্ধ করা হয়েছে।';
+        speak(powerMsg);
+        updateLiveBanner(newState ? '🟢 পাওয়ার অন: স্ক্রিন সুরক্ষিত ও অটো-ক্লিক চলমান' : '🔴 পাওয়ার অফ: অটো-ক্লিক ও টাচ প্রটেকশন বন্ধ');
+      } else if (name === 'overlay') {
+        const overlayMsg = newState
+          ? 'সবুজ পর্দা অন করা হয়েছে। ১৮+ বা ক্ষতিকর ওয়েবসাইট থেকে সুরক্ষায় সম্পূর্ণ স্ক্রিন সবুজ পর্দা দিয়ে ঢেকে দেওয়া হয়েছে। বের হতে BACK বাটন ব্যবহার করুন। ফোন রিবুট করলেও পর্দা থাকবে, OVERLAY অফ না করা পর্যন্ত উঠবে না।'
+          : 'সবুজ পর্দা অফ করা হয়েছে। পর্দা সরিয়ে সাধারণ স্ক্রিন উন্মুক্ত করা হয়েছে।';
+        speak(overlayMsg);
+        updateLiveBanner(newState ? '🛡️ সবুজ পর্দা অন | স্ক্রিন সুরক্ষিত | BACK বাটনে ক্লিক করে বের হন' : 'সবুজ পর্দা অফ করা হয়েছে');
+        showToast(newState ? '🛡️ সবুজ পর্দা সক্রিয়: স্ক্রিন ঢাকা হয়েছে' : 'সবুজ পর্দা সরানো হয়েছে');
+      } else {
+        const banglaNames = {
+          touch: 'টাচ অ্যাসিস্ট্যান্স'
+        };
+        const label = banglaNames[name] || name;
+        const stateBn = newState ? 'অন করা হয়েছে' : 'অফ করা হয়েছে';
+        speak(`${label} ${stateBn}`);
+        updateLiveBanner(`${label} ${stateBn}`);
+      }
+
+      // Backend API sync
+      try {
+        if (name === 'power') {
+          await fetch('/api/power', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              isPowerOn: newState,
+              command: newState ? 'on' : 'off',
+              source: 'FILORA_PANEL'
+            })
+          });
+        } else {
+          await fetch(`/api/controls/${name}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              value: newState,
+              source: 'FILORA_PANEL'
+            })
+          });
+        }
+      } catch (err) {
+        console.warn(`Error updating ${name}:`, err);
+      }
+    }
+
+    async function toggleTalkBack() {
+      vibrate([40]);
+      const currentState = state.controls.talkback !== false;
+      const newState = !currentState;
+      state.controls.talkback = newState;
+      renderTalkBackState(newState);
+
+      if (newState) {
+        playPowerOnChime();
+        speak('ভয়েসে পড়ে শোনানো পুনরায় চালু করা হয়েছে।');
+        showToast('🔊 TALK BACK: চালু');
+        updateLiveBanner('🔊 TALK BACK: পড়ে শোনানো চালু');
+      } else {
+        playPowerOffChime();
+        speak('ভয়েসে পড়ে শোনানো বন্ধ করা হয়েছে।');
+        showToast('🔇 OFF TALK BACK: পড়ে শোনানো বন্ধ');
+        updateLiveBanner('🔇 OFF TALK BACK: পড়ে শোনানো বন্ধ রাখা হয়েছে');
+      }
+
+      try {
+        await fetch('/api/controls/talkback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            value: newState,
+            source: 'FILORA_PANEL'
+          })
+        });
+      } catch (e) {}
+    }
+
+    // -------------------------------------------------------------
+    // Random Code Generator
+    // -------------------------------------------------------------
+    function generate8CharAlphanumeric() {
+      const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+      let result = '';
+      for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    // -------------------------------------------------------------
+    // Telegram Alert Test
+    // -------------------------------------------------------------
+    async function testTelegramAlert() {
+      playTone(750, 0.12);
+      speak("টেলিগ্রামে টেস্ট নোটিফিকেশন পাঠানো হচ্ছে...");
+      try {
+        const res = await fetch('/api/telegram/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `🔔 <b>Filora রিমোট টেস্ট অ্যালার্ট!</b>\n\nকন্ট্রোল প্যানেল থেকে সফলভাবে টেস্ট নোটিফিকেশন পাঠানো হয়েছে।`
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Telegram message sent!');
+          speak("টেলিগ্রাম মেসেজ সফলভাবে পাঠানো হয়েছে।");
+        } else {
+          showToast('Telegram config issue: ' + (data.message || ''));
+        }
+      } catch (e) {
+        showToast('Server connection error');
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Event Listeners & Keyboard Accessibility
+    // -------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. FLY Button
+      document.getElementById('btnFly').addEventListener('click', handleFlyAction);
+
+      // 2. Generate Random Code
+      document.getElementById('btnGenNewCode').addEventListener('click', () => {
+        const newCode = generate8CharAlphanumeric();
+        document.getElementById('pairCodeInput').value = newCode;
+        playTone(900, 0.08);
+        vibrate([30]);
+        speak(`নতুন পেয়ার কোড: ${newCode}`);
+        showToast(`Generated: ${newCode}`);
+      });
+
+      // 3. Enter key inside input triggers FLY
+      document.getElementById('pairCodeInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleFlyAction();
+        }
+      });
+
+      // 4. Logo button tests sound and gives system briefing
+      document.getElementById('logoBtn').addEventListener('click', () => {
+        playFlyChime();
+        vibrate([50, 50]);
+        speak("ফিলোর সিস্টেম সম্পূর্ণ সক্রিয়। দৃষ্টি প্রতিবন্ধী ভাইদের জন্য সর্বাধুনিক অ্যাক্সেসিবিলিটি প্রযুক্তি প্রস্তুত।");
+        showToast("FILORA System Ready");
+      });
+
+      // 5. Voice Guidance Toggle Button
+      const btnVoice = document.getElementById('btnVoiceToggle');
+      btnVoice.addEventListener('click', () => {
+        state.voiceEnabled = !state.voiceEnabled;
+        if (state.voiceEnabled) {
+          btnVoice.classList.add('active');
+          document.getElementById('voiceIcon').innerText = '🔊';
+          speak("ভয়েস ঘোষণা চালু করা হয়েছে।", true);
+          showToast("Voice Guidance: ON");
+        } else {
+          btnVoice.classList.remove('active');
+          document.getElementById('voiceIcon').innerText = '🔇';
+          showToast("Voice Guidance: OFF");
+        }
+      });
+
+      // 6. Control Cards Click & Keyboard Enter
+      const controls = ['overlay', 'touch', 'back', 'power'];
+      controls.forEach(name => {
+        const card = document.getElementById(`card${capitalize(name)}`);
+        card?.addEventListener('click', () => toggleControl(name));
+        card?.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleControl(name);
+          }
+        });
+      });
+
+      // 6.1. Dedicated TALK BACK / OFF TALK BACK Card Click & Enter
+      const cardTalkBack = document.getElementById('cardTalkBack');
+      if (cardTalkBack) {
+        cardTalkBack.addEventListener('click', toggleTalkBack);
+        cardTalkBack.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleTalkBack();
+          }
+        });
+      }
+
+      // 7. Drawer Toggle
+      const drawerBtn = document.getElementById('btnToggleDrawer');
+      const drawer = document.getElementById('databaseDrawer');
+      const arrow = document.getElementById('drawerArrow');
+      drawerBtn.addEventListener('click', () => {
+        const isOpen = drawer.classList.contains('open');
+        if (isOpen) {
+          drawer.classList.remove('open');
+          arrow.innerText = '▼';
+          drawerBtn.setAttribute('aria-expanded', 'false');
+          speak("ডাটাবেইজ ড্রয়ার বন্ধ করা হয়েছে।");
+        } else {
+          drawer.classList.add('open');
+          arrow.innerText = '▲';
+          drawerBtn.setAttribute('aria-expanded', 'true');
+          speak("ডাটাবেইজ ও টেলিগ্রাম স্ট্যাটাস ড্রয়ার খোলা হয়েছে।");
+          syncAllStateFromServer();
+        }
+      });
+
+      // 8. Logout Modal Flow
+      const btnLogout = document.getElementById('btnLogout');
+      const modal = document.getElementById('logoutModal');
+      const btnCancel = document.getElementById('btnCancelLogout');
+      const btnConfirm = document.getElementById('btnConfirmLogout');
+
+      btnLogout.addEventListener('click', () => {
+        playTone(400, 0.15);
+        modal.classList.add('open');
+        btnCancel.focus();
+        speak("আপনি কি লগআউট করতে চান?");
+      });
+
+      btnCancel.addEventListener('click', () => {
+        modal.classList.remove('open');
+        btnLogout.focus();
+        speak("লগআউট বাতিল করা হয়েছে।");
+      });
+
+      btnConfirm.addEventListener('click', () => {
+        modal.classList.remove('open');
+        speak("সফলভাবে লগআউট সম্পন্ন হয়েছে।");
+        showToast("Logged Out Successfully");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      });
+
+      // 9. Numeric Quick Access Keys for Blind Users
+      window.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+        if (e.key === '1') {
+          e.preventDefault();
+          toggleControl('overlay');
+        } else if (e.key === '2') {
+          e.preventDefault();
+          toggleControl('touch');
+        } else if (e.key === '3') {
+          e.preventDefault();
+          toggleControl('back');
+        } else if (e.key === '4') {
+          e.preventDefault();
+          toggleControl('power');
+        } else if (e.key === '5' || e.key.toLowerCase() === 't') {
+          e.preventDefault();
+          toggleTalkBack();
+        } else if (e.key.toLowerCase() === 'f') {
+          e.preventDefault();
+          handleFlyAction();
+        }
+      });
+
+      // Initial Sync
+      syncAllStateFromServer();
+      setInterval(syncAllStateFromServer, 3500);
+
+      // Polite Initial Announcement
+      setTimeout(() => {
+        speak("ফিলোর অ্যাক্সেসিবিলিটি প্যানেলে স্বাগতম। সমস্ত কন্ট্রোল ব্যবহারের জন্য প্রস্তুত।");
+      }, 1200);
+    });
+  </script>
+</body>
+</html>
